@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:IconItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark"  labelField="title" messageField="categorytitle" iconWidth="35" iconHeight="21" >
+</s:IconItemRenderer>
+
+<s:IconItemRenderer labelField="title" messageField="categorytitle"
+					iconFunction="getIcon" iconHeight="21" iconWidth="35">
+	<fx:Script>
+		<![CDATA[
+			[Embed(source = "assets/images/iconperson.png")]
+			public iconPerson:Class;
+			
+			[Embed(source = "assets/images/iconcompany.png")]
+			public iconCompany:Class;
+			
+			private function getIcon(item:Object):String {
+				//return item.icon;
+				if (item.humanyn)
+					return iconPerson;
+				else
+					return iconCompany;
+			}
+		]]>
+	</fx:Script>
+</s:IconItemRenderer>
