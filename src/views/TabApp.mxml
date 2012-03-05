@@ -4,6 +4,7 @@
 		title="TabApp"
 		creationComplete="tabapp_creationCompleteHandler(event)"
 		viewActivate="tabapp_viewActivateHandler(event)">
+
 	<fx:Script>
 		<![CDATA[
 			import mx.events.FlexEvent;
@@ -53,8 +54,8 @@
 	
 	<s:TabbedViewNavigator id="tabApp" width="100%" height="100%" change="tabApp_changeHandler(event)">
 		<s:ViewNavigator id="tbNewestOffers" label="Newest Offers" width="100%" height="100%" firstView="views.NewestOffersView"/>
-		<s:ViewNavigator id="tbJobs" label="Jobs" width="100%" height="100%" firstView="views.JobsView"/>
-		<s:ViewNavigator id="tbPeople" label="People" width="100%" height="100%" firstView="views.PeopleView"/>
+		<s:ViewNavigator id="tbJobs" label="Jobs" width="100%" height="100%" firstView="views.SearchJobsView"/>
+		<s:ViewNavigator id="tbPeople" label="People" width="100%" height="100%" firstView="views.SearchPeopleView"/>
 		<s:ViewNavigator id="tbSearch" label="Search" width="100%" height="100%" firstView="views.SearchView"/>
 		<s:ViewNavigator id="tbPost" label="Post" width="100%" height="100%" firstView="views.PostView"/>
 		<s:ViewNavigator id="tbSettings" label="Settings" width="100%" height="100%" firstView="views.SettingsView"/>

@@ -289,17 +289,20 @@ package database {
 			return alreadyExisting;
 		}
 
-		public function getCategories(args:Array):void {
-			if (this.dbResponder != null) {
-				var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstance(this.dbResponder, this.dbSchema.GET_CATEGORIES);
-				sqlWrapper.statement.execute();
-			}
+		public function getCategories():Array {
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_CATEGORIES);
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
 		}
 
-		public function getCategory(args:Array):void {
-			if (this.dbResponder != null && args[0] is Number) {
+		public function getCategory(cid:uint):void {
+			if (this.dbResponder != null && cid is Number) {
 				var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstance(this.dbResponder, this.dbSchema.GET_CATEGORY);
-				sqlWrapper.statement.parameters[":cid"] = args[0];
+				sqlWrapper.statement.parameters[":cid"] = cid;
 				sqlWrapper.statement.execute();
 			}
 		}
@@ -362,6 +365,17 @@ package database {
 				sqlWrapper.statement.parameters[":id"] = args[0];
 				sqlWrapper.statement.execute();
 			}
+		}
+		
+		public function getJobOfferForHuman(humanYn:Boolean):Array {	
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_JOBOFFERS_FOR_HUMAN);
+			sqlWrapper.statement.parameters[":humanyn"] = humanYn;
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
 		}
 		
 		/** ========================================================

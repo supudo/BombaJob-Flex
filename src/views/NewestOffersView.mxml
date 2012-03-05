@@ -68,7 +68,10 @@
 			}
 			
 			protected function listNewestOffers_changeHandler(event:IndexChangeEvent):void {
-				navigator.pushView(OfferDetailsView, this.listNewestOffers.selectedItem);
+				var o:Object = new Object();
+				o.itemObject = this.listNewestOffers.selectedItem;
+				o.showActionBar = true;
+				navigator.pushView(OfferDetailsView, o);
 			}
 			
 		]]>
