@@ -7,7 +7,7 @@ package utilities {
 		public function Funcs() {
 		}
 		
-		public function getListDate(dt:Date, today:Date, withYear:Boolean):String {
+		public function getFullDate(dt:Date, today:Date, withYear:Boolean):String {
 			var d:String = "";
 			d += dt.date + " ";
 			d += ResourceManager.getInstance().getString('resources','monthsLong_' + dt.month) + " ";

@@ -4,6 +4,7 @@ package database {
 	import flash.data.SQLMode;
 	import flash.data.SQLResult;
 	import flash.data.SQLStatement;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.SQLErrorEvent;
 	import flash.events.SQLEvent;
@@ -69,13 +70,16 @@ package database {
 		public function init(responder:DatabaseResponder):void {
 			var internalResponder:DatabaseResponder = new DatabaseResponder();
 			internalResponder.addEventListener(DatabaseEvent.RESULT_EVENT, onResult);
-			internalResponder.addEventListener(DatabaseEvent.ERROR_EVENT, onError);						
+			internalResponder.addEventListener(DatabaseEvent.ERROR_EVENT, onError);	
+			this.dbSchema = new DatabaseSchema();	
 			openConnection(internalResponder);	
 			
 			function onResult(de:DatabaseEvent):void {
 				internalResponder.removeEventListener(DatabaseEvent.ERROR_EVENT, onError);
 				internalResponder.removeEventListener(DatabaseEvent.RESULT_EVENT, onResult);				
-				createTables();				
+				//createTables(responder);
+				this.dbResponder = responder;
+				createTables();
 			}
 			
 			function onError(de:DatabaseEvent):void {
@@ -88,25 +92,24 @@ package database {
 			this.dbFile = File.applicationStorageDirectory.resolvePath("bombaJob_0.1.db");
 
 			this.aConn = new SQLConnection();
-			//this.aConn.addEventListener(SQLEvent.OPEN, onConnOpen);
-			//this.aConn.addEventListener(SQLErrorEvent.ERROR, onConnError);
+			
+			this.aConn.addEventListener(SQLEvent.OPEN, onConnOpen);
+			this.aConn.addEventListener(SQLErrorEvent.ERROR, onConnError);
 			//this.aConn.openAsync(this.dbFile, SQLMode.CREATE);
+			
 			if (this.dbFile.exists)
 				this.aConn.open(this.dbFile, SQLMode.UPDATE);
 			else
 				this.aConn.open(this.dbFile, SQLMode.CREATE);
-			this.dbSchema = new DatabaseSchema();				
-			this.dbResponder = responder;
+			this.dbResponder = responder;	
 
-			//AppSettings.getInstance().logThis(null, "SQL Connection successfully opened. Database:0001");
-			this.sqlStatementFactory = new SQLStatementFactory(aConn);	
-			
-			/*
+			this.sqlStatementFactory = new SQLStatementFactory(this.aConn);	
+
 			function onConnOpen(se:SQLEvent):void {
 				AppSettings.getInstance().logThis(null, "SQL Connection successfully opened. Database:0001");
 				aConn.removeEventListener(SQLEvent.OPEN, onConnOpen);
 				aConn.removeEventListener(SQLErrorEvent.ERROR, onConnError);					
-				sqlStatementFactory = new SQLStatementFactory(aConn);	
+				sqlStatementFactory = new SQLStatementFactory(aConn);
 				var de:DatabaseEvent = new DatabaseEvent(DatabaseEvent.RESULT_EVENT);
 				responder.dispatchEvent(de);				
 			}
@@ -118,14 +121,15 @@ package database {
 				var de:DatabaseEvent = new DatabaseEvent(DatabaseEvent.ERROR_EVENT);
 				responder.dispatchEvent(de);
 			}
-			*/
 		}
 		
 		/** ========================================================
 		 * Database wipe
 		 **/
 		public function wipeDatabase():void {
-			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.DELETE_TEXTCONTENT);
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.DELETE_SETTINGS);
+			sqlWrapper.statement.execute();
+			sqlWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.DELETE_TEXTCONTENT);
 			sqlWrapper.statement.execute();
 			sqlWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.DELETE_CATEGORIES);
 			sqlWrapper.statement.execute();
@@ -138,27 +142,85 @@ package database {
 		 * Table creates
 		 **/
 		public function createTables():void {
-			createTextContentTable();
+			createSettingsTable();
+		}
+		
+		private function createSettingsTable():void {
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.CREATE_TABLE_SETTINGS);
+			sqlWrapper.statement.execute();
+			this.populateSettings();
+		}
+		
+		private function populateSettings():void {
+			this.addSettings("stStorePrivateData", "true", false);
+			this.addSettings("stPDEmail", "", false);
+			this.addSettings("stShowCategories", "true", false);
+			this.addSettings("stOnlineSearch", "true", false);
+			this.addSettings("stInAppEmail", "false", false);
+			this.createTextContentTable();
 		}
 
 		private function createTextContentTable():void {
-			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstance(this.dbResponder, this.dbSchema.CREATE_TABLE_TEXTCONTENT, createCategoriesTable)
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.CREATE_TABLE_TEXTCONTENT);
 			sqlWrapper.statement.execute();
+			this.createCategoriesTable();
 		}
 
 		private function createCategoriesTable():void {
-			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstance(this.dbResponder, this.dbSchema.CREATE_TABLE_CATEGORIES, createJobOffersTable);
-			sqlWrapper.statement.execute();				
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.CREATE_TABLE_CATEGORIES);
+			sqlWrapper.statement.execute();
+			this.createJobOffersTable();
 		}	
 
 		private function createJobOffersTable():void {
-			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstance(this.dbResponder, this.dbSchema.CREATE_TABLE_JOBOFFERS, finishedCreatingTables);
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.CREATE_TABLE_JOBOFFERS);
 			sqlWrapper.statement.execute();
+			this.finishedCreatingTables();
 		}
 		private function finishedCreatingTables():void {
 			var de:DatabaseEvent = new DatabaseEvent(DatabaseEvent.RESULT_EVENT);
 			de.data = this.dbSchema.TABLES_CREATED;
-			this.dbResponder.dispatchEvent(de);
+			if (this.dbResponder != null)
+				this.dbResponder.dispatchEvent(de);
+			this.dispatchEvent(new Event("dbConnInitiated", true));
+		}
+		
+		/** ========================================================
+		 * Settings
+		 **/
+		public function addSettings(sname:String, svalue:String, doUpdate:Boolean):void {
+			if (sname != "" && svalue != "") {
+				var exists:Boolean = this.hasSettings(sname);
+				if (!exists || doUpdate) {
+					AppSettings.getInstance().logThis(null, "addSettings (" + (exists ? "update" : "insert") + ") ... " + sname);
+					var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(((exists) ? this.dbSchema.UPDATE_SETTINGS : this.dbSchema.INSERT_SETTINGS));
+					sqlWrapper.statement.parameters[":sname"] = sname; 
+					sqlWrapper.statement.parameters[":svalue"] =  svalue;
+					sqlWrapper.statement.execute();
+				}
+			}
+		}
+		
+		public function hasSettings(sname:String):Boolean {
+			var alreadyExisting:Boolean = false;
+			if (sname != "") {
+				var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_SETTINGS);
+				sqlWrapper.statement.parameters[":sname"] = sname;
+				sqlWrapper.statement.execute();
+				sqlWrapper.result = sqlWrapper.statement.getResult(); 
+				alreadyExisting = sqlWrapper.result.data != null && sqlWrapper.result.data.length > 0;
+			}
+			return alreadyExisting;
+		}
+		
+		public function getSettings():Array {
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_SETTINGS_ALL);
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
 		}
 
 		/** ========================================================
@@ -194,7 +256,7 @@ package database {
 				var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_TEXTCONTENT);
 				sqlWrapper.statement.parameters[":cid"] = cid;
 				sqlWrapper.statement.execute();
-				sqlWrapper.result = sqlWrapper.statement.getResult(); 
+				sqlWrapper.result = sqlWrapper.statement.getResult();
 				ent = sqlWrapper.result.data[0] as Object;
 			}
 			return ent;
@@ -209,7 +271,7 @@ package database {
 				AppSettings.getInstance().logThis(null, "addCategory (" + (exists ? "update" : "insert") + ") ... " + ent.id);
 				var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(((exists) ? this.dbSchema.UPDATE_CATEGORIES : this.dbSchema.INSERT_CATEGORIES));
 				sqlWrapper.statement.parameters[":cid"] = ent.id; 
-				sqlWrapper.statement.parameters[":title"] =  ent.title;
+				sqlWrapper.statement.parameters[":title"] =  ent.name;
 				sqlWrapper.statement.parameters[":offerscount"] = ent.offerscount;
 				sqlWrapper.statement.execute();
 			}
@@ -285,7 +347,7 @@ package database {
 		}
 
 		public function getJobOffers():Array {
-			var items:Array = null;			
+			var items:Array = null;
 			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_JOBOFFERS);
 			sqlWrapper.statement.execute();
 			sqlWrapper.result = sqlWrapper.statement.getResult();

@@ -2,11 +2,12 @@ package utilities {
 	import com.adobe.fiber.services.wrapper.HTTPServiceWrapper;
 	import com.adobe.serializers.json.JSONDecoder;
 	
+	import database.DataModel;
 	import database.Database;
+	import database.DatabaseEvent;
 	import database.DatabaseResponder;
 	
 	import flash.events.Event;
-	import flash.utils.getQualifiedClassName;
 	
 	import mx.collections.ArrayCollection;
 	import mx.rpc.AsyncToken;
@@ -24,6 +25,7 @@ package utilities {
 
 		private var httpService:HTTPService = new HTTPService();
 		private var dbHelper:Database = new Database();
+		private var dbResponder:DatabaseResponder = new DatabaseResponder();
 		
 		private var SERVICE_TEXTCONTENT:String = "?action=getTextContent";
 		private var SERVICE_CATEGORIES:String = "?action=getCategories";
@@ -54,12 +56,18 @@ package utilities {
 			this.httpService.contentType = "application/json";
 			this.httpService.resultFormat = HTTPService.RESULT_FORMAT_TEXT;
 			this.dbHelper = new Database();
-			this.dbHelper.init(new DatabaseResponder());
-			if (this.doFullSync)
-				this.dbHelper.wipeDatabase();
 		}
 
 		public function StartSync():void {
+			this.dbHelper.addEventListener("dbConnInitiated", dbConnectionInitiated);
+			this.dbHelper.init(this.dbResponder);
+		}
+		
+		public function dbConnectionInitiated(event:Event):void {
+			this.removeEventListener("dbConnInitiated", dbConnectionInitiated);
+			if (this.doFullSync)
+				this.dbHelper.wipeDatabase();
+			AppSettings.getInstance().dbHelper = this.dbHelper;
 			this.StartSyncWithService(this.SERVICE_TEXTCONTENT);
 		}
 		

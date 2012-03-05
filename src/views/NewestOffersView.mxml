@@ -3,7 +3,8 @@
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		skinClass="skins.BJSkin"
 		title="Newest Offers"
-		creationComplete="view_creationCompleteHandler(event)">
+		creationComplete="newestOffersView_creationCompleteHandler(event)"
+		viewActivate="newestOffersView_viewActivateHandler(event)">
 
 	<s:layout>
 		<s:VerticalLayout gap="0"/>
@@ -18,48 +19,58 @@
 			import database.Database;
 			import database.DatabaseResponder;
 			
-			import flash.utils.getTimer;
-			
 			import models.JobOfferModel;
 			
 			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
 			
+			import spark.events.IndexChangeEvent;
+			import spark.events.ViewNavigatorEvent;
+			
 			import utilities.AppSettings;
 			import utilities.Funcs;
+
 			private var dbHelper:Database;
 			
 			[Bindable]
 			private var offersModel:JobOfferModel;
 			
-			protected function view_creationCompleteHandler(event:FlexEvent):void {
+			protected function newestOffersView_creationCompleteHandler(event:FlexEvent):void {
 				this.title = resourceManager.getString('resources','menu_NewestOffers');
-				
-				this.offersModel = JobOfferModel.getInstance();
+				this.addEventListener("syncComplete", loadItems);
+			}
+			
+			protected function newestOffersView_viewActivateHandler(event:ViewNavigatorEvent):void {
+				this.loadItems(null);
+			}
 
+			public function loadItems(event:Event):void {
+				this.offersModel = JobOfferModel.getInstance();
 				this.dbHelper = new Database();
 				this.dbHelper.init(new DatabaseResponder());
 				var offs:Array = this.dbHelper.getJobOffers();
 				
-				var f:Funcs = new Funcs();
-				
-				if (this.offersModel.items == null) {
-					this.offersModel.items = new ArrayCollection();
-					var off:Object, obj:Object;
-					var today:Date = new Date();
-					for (var i:int=0; i<offs.length; i++) {
-						off = offs[i];
-						obj = new Object();
-						obj.oid = off.oid;
-						var title:String = f.getListDate(off.publishdate as Date, today, false) + " // ";
-						title += off.title;
-						obj.title = title;
-						obj.subtitle = off.categorytitle;
-						obj.humanyn = off.humanyn;
-						this.offersModel.items.addItem(obj);
+				if (offs != null) {
+					this.removeEventListener("syncComplete", loadItems);
+					var f:Funcs = new Funcs();
+					
+					if (this.offersModel.items == null) {
+						this.offersModel.items = new ArrayCollection();
+						var off:Object, obj:Object;
+						var today:Date = new Date();
+						for (var i:int=0; i<offs.length; i++) {
+							off = offs[i];
+							off.listtitle = f.getFullDate(off.publishdate as Date, today, false) + " // " + off.title;
+							this.offersModel.items.addItem(off);
+						}
 					}
 				}
 			}
+			
+			protected function listNewestOffers_changeHandler(event:IndexChangeEvent):void {
+				navigator.pushView(OfferDetailsView, this.listNewestOffers.selectedItem);
+			}
+			
 		]]>
 	</fx:Script>
 	
@@ -72,10 +83,11 @@
 	</fx:Declarations>
 	
 	<s:List  id="listNewestOffers" width="100%" height="100%" dataProvider="{offersModel.items}"
-			 alternatingItemColors="[0xE3E3E3, 0xEBEBEC]">
+			 alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
+			 change="listNewestOffers_changeHandler(event)">
 		<s:itemRenderer>
 			<fx:Component>
-				<s:IconItemRenderer labelField="title" messageField="subtitle"
+				<s:IconItemRenderer labelField="listtitle" messageField="categorytitle"
 									iconFunction="getIcon" iconHeight="21" iconWidth="35"
 									messageStyleName="nofItem">
 					<fx:Script>

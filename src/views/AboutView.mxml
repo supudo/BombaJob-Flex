@@ -28,16 +28,6 @@
 				var aboutHtml:String = dbHelper.getTextContent(35).content;
 				aboutHtml = aboutHtml.replace(new RegExp("<br />", "g"), "");
 
-				/*
-				var yOffset:Number = 40;
-				var stageWebView:StageWebView = new StageWebView();
-				stageWebView.stage = this.stage;
-				stageWebView.viewPort = new Rectangle(0, yOffset, stage.width, (systemManager.screen.height - navigator.actionBar.height - FlexGlobals.topLevelApplication.tabApp.tabBar.height));
-				stageWebView.loadString(aboutHtml);
-				*/
-				//this.webView.loadString(aboutHtml);
-				//<controls:WebView id="webView" top="0" width="100%" height="100%" />
-
 				var myStyleSheet:StyleSheet = new StyleSheet();
 				var styles:String = "a { color: #000000; } a:hover { color: #DF9368; text-decoration: underline; }";
 				myStyleSheet.parseCSS(styles);

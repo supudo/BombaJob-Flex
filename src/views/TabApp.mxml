@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		title="TabApp"
+		creationComplete="tabapp_creationCompleteHandler(event)"
+		viewActivate="tabapp_viewActivateHandler(event)">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.ViewNavigatorEvent;
+			
+			import utilities.AppSettings;
+			
+			public var bjApp:BombaJob;
+			
+			protected function tabapp_creationCompleteHandler(event:FlexEvent):void {
+				this.addEventListener("syncComplete", reloadItems);
+			}
+			
+			protected function tabapp_viewActivateHandler(event:ViewNavigatorEvent):void {
+				this.tbNewestOffers.label = resourceManager.getString('resources','menu_NewestOffers');
+				this.tbJobs.label = resourceManager.getString('resources','menu_Jobs');
+				this.tbPeople.label = resourceManager.getString('resources','menu_People');
+				this.tbSearch.label = resourceManager.getString('resources','menu_Search');
+				this.tbPost.label = resourceManager.getString('resources','menu_Post');
+				this.tbSettings.label = resourceManager.getString('resources','menu_Settings');
+				this.tbSync.label = resourceManager.getString('resources','menu_Sync');
+				this.tbAbout.label = resourceManager.getString('resources','menu_About');
+				this.tabApp.visible = true;
+				this.tabApp.selectedIndex = 0;
+			}
+
+			protected function tabApp_changeHandler(event:IndexChangeEvent):void {
+				if (event.newIndex == 6) {
+					this.bjApp.tabApp.visible = false;
+					this.bjApp.loadingView.visible = true;
+					this.bjApp.loadingView.startSync();
+				}
+			}
+			
+			protected function reloadItems(event:Event):void {
+				this.removeEventListener("syncComplete", reloadItems);
+				this.tbNewestOffers.activeView.dispatchEvent(new Event("syncComplete", true));
+			}
+		]]>
+	</fx:Script>
+
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:TabbedViewNavigator id="tabApp" width="100%" height="100%" change="tabApp_changeHandler(event)">
+		<s:ViewNavigator id="tbNewestOffers" label="Newest Offers" width="100%" height="100%" firstView="views.NewestOffersView"/>
+		<s:ViewNavigator id="tbJobs" label="Jobs" width="100%" height="100%" firstView="views.JobsView"/>
+		<s:ViewNavigator id="tbPeople" label="People" width="100%" height="100%" firstView="views.PeopleView"/>
+		<s:ViewNavigator id="tbSearch" label="Search" width="100%" height="100%" firstView="views.SearchView"/>
+		<s:ViewNavigator id="tbPost" label="Post" width="100%" height="100%" firstView="views.PostView"/>
+		<s:ViewNavigator id="tbSettings" label="Settings" width="100%" height="100%" firstView="views.SettingsView"/>
+		<s:ViewNavigator id="tbSync" label="Sync" width="100%" height="100%" firstView="views.SyncView"/>
+		<s:ViewNavigator id="tbAbout" label="About" width="100%" height="100%" firstView="views.AboutView"/>
+	</s:TabbedViewNavigator>
+
+</s:View>
