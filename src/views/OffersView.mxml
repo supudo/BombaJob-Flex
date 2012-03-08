@@ -5,7 +5,8 @@
 		title="Offers"
 		actionBarVisible="false"
 		creationComplete="offersView_creationCompleteHandler(event)"
-		updateComplete="offersView_updateCompleteHandler(event)">
+		updateComplete="offersView_updateCompleteHandler(event)"
+		viewActivate="offersView_viewActivateHandler(event)">
 	
 	<s:layout>
 		<s:VerticalLayout gap="0"/>
@@ -38,6 +39,7 @@
 			private var superViewJobs:SearchJobsView;
 			private var superViewPeople:SearchPeopleView;
 			private var humanYn:Boolean = false;
+			private var categoryID:uint = 0;
 			
 			[Bindable]
 			private var offersModel:JobOfferModel;
@@ -45,6 +47,10 @@
 			protected function offersView_creationCompleteHandler(event:FlexEvent):void {
 				this.addEventListener(ViewEvent.SearchJobsView, setNavData);
 				this.addEventListener(ViewEvent.SearchPeopleView, setNavData);
+				if (data != null) {
+					this.categoryID = data.cid as uint;
+					AppSettings.getInstance().logThis(this, "xxx creationComplete..." + this.categoryID);
+				}
 			}
 			
 			protected function offersView_updateCompleteHandler(event:FlexEvent):void {
@@ -56,19 +62,30 @@
 							if (data.object.resetBar)
 								this.superViewJobs.setBar();
 						}
-						else
+						else {
 							this.superViewPeople = data.object.superView as views.SearchPeopleView;
+							if (data.object.resetBar)
+								this.superViewPeople.setBar();
+						}
 					}
 				}
 				this.title = resourceManager.getString('resources','menu_Offers');
 			}
 			
+			protected function offersView_viewActivateHandler(event:ViewNavigatorEvent):void {
+				this.loadItems(null);
+			}
+			
 			public function loadItems(event:Event):void {
 				this.offersModel = JobOfferModel.getInstance();
-				this.dbHelper = new Database();
-				this.dbHelper.init(new DatabaseResponder());
-				var offs:Array = this.dbHelper.getJobOfferForHuman(this.humanYn);
-				
+				this.dbHelper = AppSettings.getInstance().dbHelper;
+
+				var offs:Array = null;
+				if (this.categoryID > 0)
+					offs = this.dbHelper.getJobOffersComplex(this.humanYn, this.categoryID);
+				else
+					offs = this.dbHelper.getJobOfferForHuman(this.humanYn);
+
 				if (offs != null) {
 					var f:Funcs = new Funcs();
 					
@@ -121,9 +138,9 @@
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	
-	<s:List  id="listOffers" width="100%" height="100%" dataProvider="{offersModel.items}"
-			 alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
-			 change="listOffers_changeHandler(event)">
+	<s:List id="listOffers" width="100%" height="100%" dataProvider="{offersModel.items}"
+			alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
+			change="listOffers_changeHandler(event)">
 		<s:itemRenderer>
 			<fx:Component>
 				<s:IconItemRenderer labelField="listtitle" messageField="categorytitle" messageStyleName="nofItem" />

@@ -35,20 +35,19 @@
 			
 			[Bindable]
 			private var itemsModel:CategoryModel;
-			
+
 			protected function categoriesView_creationCompleteHandler(event:FlexEvent):void {
 				this.title = resourceManager.getString('resources','menu_Categories');
 				this.addEventListener("syncComplete", loadItems);
 			}
-			
+
 			protected function categoriesView_updateCompleteHandler(event:FlexEvent):void {
 				this.loadItems(null);
 			}
-			
+
 			public function loadItems(event:Event):void {
 				this.itemsModel = CategoryModel.getInstance();
-				this.dbHelper = new Database();
-				this.dbHelper.init(new DatabaseResponder());
+				this.dbHelper = AppSettings.getInstance().dbHelper;
 				var ents:Array = this.dbHelper.getCategories();
 				
 				if (ents != null) {
@@ -65,7 +64,7 @@
 			}
 			
 			protected function listCategories_changeHandler(event:IndexChangeEvent):void {
-				//navigator.pushView(OfferDetailsView, this.listOffers.selectedItem);
+				navigator.pushView(OffersView, this.listCategories.selectedItem);
 			}
 			
 		]]>

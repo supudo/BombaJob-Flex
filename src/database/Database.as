@@ -378,6 +378,18 @@ package database {
 			return items;
 		}
 		
+		public function getJobOffersComplex(humanYn:Boolean, categoryID:uint):Array {	
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_JOBOFFERS_COMPLEX);
+			sqlWrapper.statement.parameters[":humanyn"] = humanYn;
+			sqlWrapper.statement.parameters[":cid"] = categoryID;
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
+		}
+		
 		/** ========================================================
 		 * Gets the last inserted rowid, according to the function last_insert_rowid() in SQLite
 		 * 		 
