@@ -24,15 +24,15 @@ package utilities {
 		public var doFullSync:Boolean;
 
 		private var httpService:HTTPService = new HTTPService();
-		private var dbHelper:Database = new Database();
+		public var dbHelper:Database = new Database();
 		private var dbResponder:DatabaseResponder = new DatabaseResponder();
 		
 		private var SERVICE_TEXTCONTENT:String = "?action=getTextContent";
 		private var SERVICE_CATEGORIES:String = "?action=getCategories";
 		private var SERVICE_NEWOFFERS:String = "?action=get500Jobs&wd=2";
-		private var SERVICE_SEARCHJOBS:String = "?action=searchJobs";
-		private var SERVICE_SEARCHPEOPLE:String = "?action=searchPeople";
-		private var SERVICE_SEARCH:String = "?action=searchOffers";
+		private var SERVICE_SEARCHJOBS:String = "?action=searchJobs&wd=2";
+		private var SERVICE_SEARCHPEOPLE:String = "?action=searchPeople&wd=2";
+		private var SERVICE_SEARCH:String = "?action=searchOffers&wd=2";
 		private var SERVICE_POSTOFFER:String = "?action=postNewJob";
 		private var SERVICE_POSTMESSAGE:String = "?action=postMessage";
 		private var SERVICE_SENDEMAIL:String = "?action=sendEmailMessage";
@@ -156,6 +156,10 @@ package utilities {
 					this.handleNewOffers(jsonResponse);
 					break;
 				}
+				case this.SERVICE_ID_SEARCH: {
+					this.handleSearchOffers(jsonResponse);
+					break;
+				}
 				default: {
 					break;
 				}
@@ -202,6 +206,33 @@ package utilities {
 			this.syncCompleted();
 		}
 		
+		private function handleSearchOffers(jsonResponse:String):void {
+			var entities:Object = JSON.parse(jsonResponse);
+			if (entities != null && entities.searchOffers != null) {
+				for (var i:uint=0; i<entities.searchOffers.length; i++) {
+					var ent:Object = entities.searchOffers[i];
+					var cid:uint = ent.id;
+					this.dbHelper.addJobOffers(ent);
+				}
+			}
+			this.dispatchEvent(new Event("searchFinished", true));
+		}
+		
+		/**
+		 * Publics
+		 **/
+		public function startSearch(searchQuery:String, freelanceYn:int):void {
+			AppSettings.getInstance().logThis(null, "startSearch : freelanceYn = '" + freelanceYn + "', searchQuery = '" + searchQuery + "'");
+			this.ServiceID = this.SERVICE_ID_SEARCH;
+			this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_SEARCH + "&keyword=" + searchQuery + "&freelance=" + freelanceYn;
+			this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
+			this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
+			var token:AsyncToken = this.httpService.send();
+			token.addResponder(new mx.rpc.Responder(onJSONResult, onJSONFault));
+		}
+		
+		public function postOffer(off:Object):void {
+		}
 	}
 
 }

@@ -2,13 +2,181 @@
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		skinClass="skins.BJSkin"
-		title="Post">
+		title="Post"
+		viewActivate="post_viewActivateHandler(event)">
 	
 	<fx:Metadata>
 		[ResourceBundle("resources")]
 	</fx:Metadata> 
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.events.PopUpEvent;
+			import spark.events.ViewNavigatorEvent;
+			
+			import utilities.AppSettings;
+			import utilities.Synchronization;
+
+			protected var _sync:Synchronization;
+			
+			[Bindable]
+			private var itemsHuman:ArrayCollection;
+			[Bindable]
+			private var itemsCategory:ArrayCollection;
+			[Bindable]
+			private var itemsFreelance:ArrayCollection;
+			
+			protected function post_viewActivateHandler(event:ViewNavigatorEvent):void {
+				this.title = resourceManager.getString('resources','menu_Post');
+
+				this.lblTitle.text = resourceManager.getString('resources','post_Human_Title');
+				this.lblEmail.text = resourceManager.getString('resources','post_Human_Email');
+				this.lblPositivism.text = resourceManager.getString('resources','post_Human_Positiv');
+				this.lblNegativism.text = resourceManager.getString('resources','post_Human_Negativ');
+
+				this.itemsHuman = new ArrayCollection();
+				this.itemsCategory = new ArrayCollection();
+				this.itemsFreelance = new ArrayCollection();
+				
+				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice'));
+				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice_H'));
+				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice_C'));
+
+				this.itemsFreelance.addItem(resourceManager.getString('resources','odetails_FreelanceQ'));
+				this.itemsFreelance.addItem(resourceManager.getString('resources','yes'));
+				this.itemsFreelance.addItem(resourceManager.getString('resources','no'));
+				
+				this.itemsCategory.addItem(resourceManager.getString('resources','post_Category_Human'));
+				var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
+				for (var i:int=0; i<ents.length; i++)
+					this.itemsCategory.addItem(ents[i]);
+			}
+			
+			protected function spHuman_changeHandler(event:IndexChangeEvent):void {
+				this.itemsCategory.removeItemAt(0);
+				this.itemsCategory.addItemAt(resourceManager.getString('resources','post_Category_Human'), 0);
+				this.lblTitle.text = resourceManager.getString('resources','post_Human_Title');
+				this.lblEmail.text = resourceManager.getString('resources','post_Human_Email');
+				this.lblPositivism.text = resourceManager.getString('resources','post_Human_Positiv');
+				this.lblNegativism.text = resourceManager.getString('resources','post_Human_Negativ');
+				if (this.spHuman.selectedIndex == 2) {
+					this.itemsCategory.addItemAt(resourceManager.getString('resources','post_Category_Company'), 0);
+					this.lblTitle.text = resourceManager.getString('resources','post_Company_Title');
+					this.lblEmail.text = resourceManager.getString('resources','post_Company_Email');
+					this.lblPositivism.text = resourceManager.getString('resources','post_Company_Positiv');
+					this.lblNegativism.text = resourceManager.getString('resources','post_Company_Negativ');
+				}
+				this.spCategory.selectedIndex = 0;
+			}
+			
+			protected function btnPost_clickHandler(event:MouseEvent):void {
+				var off:Object = new Object();
+				off.human = ((this.spHuman.selectedIndex == 2) ? "1" : "0");
+				off.freelance = ((this.spFreelance.selectedIndex == 2) ? "1" : "0");
+				off.category = this.spCategory.selectedItem.cid;
+				off.title = this.txtTitle.text;
+				off.email = this.txtEmail.text;
+				off.positivism = this.txtPositivism.text;
+				off.negativism = this.txtNegativism.text;
+
+				var errorMessage:String = "";
+				var validationError:Boolean = true;
+				if (off.title.equals(""))
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Title') : resourceManager.getString('resources','post_error_Company_Title'));
+				else if (off.email.equals(""))
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Email') : resourceManager.getString('resources','post_error_Company_Email'));
+				else if (off.positivism.equals(""))
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Positiv') : resourceManager.getString('resources','post_error_Company_Positiv'));
+				else if (off.negativism.equals(""))
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Negativ') : resourceManager.getString('resources','post_error_Company_Negativ'));
+				else if (off.category == 0)
+					errorMessage = resourceManager.getString('resources','post_error_Category');
+				else
+					validationError = false;
+
+				if (validationError) {
+					var _alert:AlertMsgPost = new AlertMsgPost();
+					_alert.open(this, true);
+					_alert.alertPostTitleWindow.title = resourceManager.getString('resources','menu_PostN');
+					_alert.alertPostText.text = errorMessage;
+					_alert.move(((this.width / 2) - (_alert.width / 2)), ((this.height / 2) - (_alert.height / 2)));
+				}
+				else {
+					this._sync = new Synchronization(null);
+					this._sync.addEventListener("postFinished", postFinished);
+					this._sync.dbHelper = AppSettings.getInstance().dbHelper;
+					this._sync.postOffer(off);
+				}
+			}
+			
+			public function postFinished(event:Event):void {
+				AppSettings.getInstance().logThis(null, "Post finished ... ");
+				this.removeEventListener("postFinished", postFinished);
+				this.spHuman.selectedIndex == 0;
+				this.spFreelance.selectedIndex == 0;
+				this.spCategory.selectedIndex = 0;
+				this.txtTitle.text = "";
+				this.txtEmail.text = "";
+				this.txtPositivism.text = "";
+				this.txtNegativism.text = "";
+
+				var _alert:AlertMsgPost = new AlertMsgPost();
+				_alert.open(this, true);
+				_alert.alertPostTitleWindow.title = resourceManager.getString('resources','menu_PostN');
+				_alert.alertPostText.text = resourceManager.getString('resources','post_OfferSuccess');
+				_alert.move(((this.width / 2) - (_alert.width / 2)), ((this.height / 2) - (_alert.height / 2)));
+			}
+			
+		]]>
+	</fx:Script>
 
 	<fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:Component className="AlertMsgPost">
+			<s:SkinnablePopUpContainer x="0" y="0">
+				<s:TitleWindow id="alertPostTitleWindow" title="" close="close()" styleName="Alert">
+					<s:VGroup horizontalAlign="center" verticalAlign="middle" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+						<s:Label id="alertPostText" text="No results!"/>
+						<s:Button id="alertPostOK" label="OK" click="close()"/>
+					</s:VGroup>
+				</s:TitleWindow>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
 	</fx:Declarations>
+	
+	<s:Scroller height="100%" width="100%">
+		<s:VGroup gap="10" paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" width="100%" height="100%">
+			<s:HGroup horizontalAlign="center" width="100%">
+				<s:SpinnerListContainer width="280">
+					<s:SpinnerList id="spHuman" width="100%" dataProvider="{itemsHuman}" change="spHuman_changeHandler(event)" />
+				</s:SpinnerListContainer>
+				<s:Spacer height="10" />
+				<s:SpinnerListContainer width="280">
+					<s:SpinnerList id="spFreelance" width="100%" dataProvider="{itemsFreelance}" />
+				</s:SpinnerListContainer>
+				<s:Spacer height="10" />
+				<s:SpinnerListContainer width="280">
+					<s:SpinnerList id="spCategory" width="100%" labelField="title" dataProvider="{itemsCategory}" />
+				</s:SpinnerListContainer>
+			</s:HGroup>
+			<s:Spacer height="10" />
+			<s:Label id="lblTitle" text="Title..." />
+			<s:TextInput id="txtTitle" width="100%" />
+			<s:Spacer height="10" />
+			<s:Label id="lblEmail" text="Email..." />
+			<s:TextInput id="txtEmail" width="100%" />
+			<s:Spacer height="10" />
+			<s:Label id="lblPositivism" text="Positivism..." />
+			<s:TextArea id="txtPositivism" width="100%" height="115" />
+			<s:Spacer height="10" />
+			<s:Label id="lblNegativism" text="Negativism..." />
+			<s:TextArea id="txtNegativism" width="100%" height="115" />
+			<s:Spacer height="10" />
+			<s:HGroup horizontalAlign="center" width="100%">
+				<s:Button id="btnPost" label="Search..." skinClass="skins.BoomButtonSkin" click="btnPost_clickHandler(event)" />
+			</s:HGroup>
+		</s:VGroup>
+	</s:Scroller>
+
 </s:View>

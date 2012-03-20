@@ -29,7 +29,7 @@
 				aboutHtml = aboutHtml.replace(new RegExp("<br />", "g"), "");
 
 				var myStyleSheet:StyleSheet = new StyleSheet();
-				var styles:String = "a { color: #000000; } a:hover { color: #DF9368; text-decoration: underline; }";
+				var styles:String = "a { color: #000000; text-decoration: underline; } a:hover { color: #DF9368; }";
 				myStyleSheet.parseCSS(styles);
 
 				StyleableTextField(this.txtContent.textDisplay).styleSheet = myStyleSheet;

@@ -106,23 +106,24 @@
 		<s:Button id="btnShare" icon="@Embed('assets/images/action-share.png')" click="btnShare_clickHandler(event)" />
 	</s:actionContent>
 
-	<s:VGroup gap="10" paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" width="100%" height="100%">
-		<s:Label id="lblCategory" text="Category..." width="100%" />
-		<s:Spacer height="6" />
-		<s:Label id="lblTitle" text="Title..." width="100%" styleName="boldTitle" />
-		<s:Spacer height="6" />
-		<s:Label id="lblDate" text="Date..." width="100%" />
-		<s:Spacer height="10" />
-		<s:HGroup>
-			<s:Label id="lblFreelanceLabel" text="Freelance Label..." styleName="boldTitle" />
-			<s:Label id="lblFreelance" text="Freelance..." width="100%" />			
-		</s:HGroup>
-		<s:Spacer height="10" />
-		<s:Label id="lblPositivismLabel" text="PosLabel..." width="100%" styleName="boldTitle" />
-		<s:Label id="lblPositivism" text="Pos..." width="100%" />
-		<s:Spacer height="10" />
-		<s:Label id="lblNegativismLabel" text="NegLabel..." width="100%" styleName="boldTitle" />
-		<s:Label id="lblNegativism" text="Neg..." width="100%" />
-	</s:VGroup>
-
+	<s:Scroller height="100%" width="100%">
+		<s:VGroup gap="10" paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" width="100%" height="100%">
+			<s:Label id="lblCategory" text="Category..." width="100%" />
+			<s:Spacer height="6" />
+			<s:Label id="lblTitle" text="Title..." width="100%" styleName="boldTitle" />
+			<s:Spacer height="6" />
+			<s:Label id="lblDate" text="Date..." width="100%" />
+			<s:Spacer height="10" />
+			<s:HGroup>
+				<s:Label id="lblFreelanceLabel" text="Freelance Label..." styleName="boldTitle" />
+				<s:Label id="lblFreelance" text="Freelance..." width="100%" />			
+			</s:HGroup>
+			<s:Spacer height="10" />
+			<s:Label id="lblPositivismLabel" text="PosLabel..." width="100%" styleName="boldTitle" />
+			<s:Label id="lblPositivism" text="Pos..." width="100%" />
+			<s:Spacer height="10" />
+			<s:Label id="lblNegativismLabel" text="NegLabel..." width="100%" styleName="boldTitle" />
+			<s:Label id="lblNegativism" text="Neg..." width="100%" />
+		</s:VGroup>
+	</s:Scroller>
 </s:View>

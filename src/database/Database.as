@@ -389,6 +389,18 @@ package database {
 				items = sqlWrapper.result.data;
 			return items;
 		}
+
+		public function searchJobOffers(searchQuery:String, searchFreelance:int):Array {
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.SEARCH_JOBOFFERS);
+			sqlWrapper.statement.parameters[":freelanceyn"] = searchFreelance;
+			sqlWrapper.statement.parameters[":searchq"] = "%" + searchQuery + "%";
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
+		}
 		
 		/** ========================================================
 		 * Gets the last inserted rowid, according to the function last_insert_rowid() in SQLite

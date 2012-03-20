@@ -22,6 +22,7 @@ package database {
 		public const GET_JOBOFFERS_FOR_CATEGORY_ID:String = "SELECT * FROM job_offers WHERE cid = :cid";
 		public const GET_JOBOFFERS_FOR_HUMAN:String = "SELECT * FROM job_offers WHERE humanyn = :humanyn";
 		public const GET_JOBOFFERS_COMPLEX:String = "SELECT * FROM job_offers WHERE humanyn = :humanyn AND cid = :cid";
+		public const SEARCH_JOBOFFERS:String = "SELECT * FROM job_offers WHERE freelanceyn = :freelanceyn AND (title LIKE :searchq OR negativism LIKE :searchq OR positivism LIKE :searchq)";
 
 		public const GET_LAST_INSERT_ROWID:String = "SELECT last_insert_rowid()";
 		
