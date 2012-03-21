@@ -10,6 +10,8 @@
 	</fx:Metadata> 
 	<fx:Script>
 		<![CDATA[
+			import events.DataEvent;
+			
 			import mx.collections.ArrayCollection;
 			
 			import spark.events.IndexChangeEvent;
@@ -30,6 +32,8 @@
 			
 			protected function post_viewActivateHandler(event:ViewNavigatorEvent):void {
 				this.title = resourceManager.getString('resources','menu_Post');
+				
+				this.btnPost.label = resourceManager.getString('resources','post_Button'); 
 
 				this.lblTitle.text = resourceManager.getString('resources','post_Human_Title');
 				this.lblEmail.text = resourceManager.getString('resources','post_Human_Email');
@@ -43,26 +47,40 @@
 				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice'));
 				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice_H'));
 				this.itemsHuman.addItem(resourceManager.getString('resources','post_HumanCompany_Choice_C'));
+				this.spHuman.selectedIndex = 1;
 
 				this.itemsFreelance.addItem(resourceManager.getString('resources','odetails_FreelanceQ'));
 				this.itemsFreelance.addItem(resourceManager.getString('resources','yes'));
 				this.itemsFreelance.addItem(resourceManager.getString('resources','no'));
 				
-				this.itemsCategory.addItem(resourceManager.getString('resources','post_Category_Human'));
+				var zeroObj:Object = new Object();
+				zeroObj.cid = 0;
+				zeroObj.title = resourceManager.getString('resources','post_Category_Human');
+				this.itemsCategory.addItemAt(zeroObj, 0);
 				var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
 				for (var i:int=0; i<ents.length; i++)
 					this.itemsCategory.addItem(ents[i]);
 			}
 			
 			protected function spHuman_changeHandler(event:IndexChangeEvent):void {
-				this.itemsCategory.removeItemAt(0);
-				this.itemsCategory.addItemAt(resourceManager.getString('resources','post_Category_Human'), 0);
-				this.lblTitle.text = resourceManager.getString('resources','post_Human_Title');
-				this.lblEmail.text = resourceManager.getString('resources','post_Human_Email');
-				this.lblPositivism.text = resourceManager.getString('resources','post_Human_Positiv');
-				this.lblNegativism.text = resourceManager.getString('resources','post_Human_Negativ');
-				if (this.spHuman.selectedIndex == 2) {
-					this.itemsCategory.addItemAt(resourceManager.getString('resources','post_Category_Company'), 0);
+				var zeroObj:Object;
+				if (this.spHuman.selectedIndex == 1) {
+					this.itemsCategory.removeItemAt(0);
+					zeroObj = new Object();
+					zeroObj.cid = 0;
+					zeroObj.title = resourceManager.getString('resources','post_Category_Human');
+					this.itemsCategory.addItemAt(zeroObj, 0);
+					this.lblTitle.text = resourceManager.getString('resources','post_Human_Title');
+					this.lblEmail.text = resourceManager.getString('resources','post_Human_Email');
+					this.lblPositivism.text = resourceManager.getString('resources','post_Human_Positiv');
+					this.lblNegativism.text = resourceManager.getString('resources','post_Human_Negativ');
+				}
+				else if (this.spHuman.selectedIndex == 2) {
+					this.itemsCategory.removeItemAt(0);
+					zeroObj = new Object();
+					zeroObj.cid = 0;
+					zeroObj.title = resourceManager.getString('resources','post_Category_Company');
+					this.itemsCategory.addItemAt(zeroObj, 0);
 					this.lblTitle.text = resourceManager.getString('resources','post_Company_Title');
 					this.lblEmail.text = resourceManager.getString('resources','post_Company_Email');
 					this.lblPositivism.text = resourceManager.getString('resources','post_Company_Positiv');
@@ -73,30 +91,29 @@
 			
 			protected function btnPost_clickHandler(event:MouseEvent):void {
 				var off:Object = new Object();
-				off.human = ((this.spHuman.selectedIndex == 2) ? "1" : "0");
-				off.freelance = ((this.spFreelance.selectedIndex == 2) ? "1" : "0");
-				off.category = this.spCategory.selectedItem.cid;
-				off.title = this.txtTitle.text;
-				off.email = this.txtEmail.text;
-				off.positivism = this.txtPositivism.text;
-				off.negativism = this.txtNegativism.text;
+				off.h = ((this.spHuman.selectedIndex == 2) ? "1" : "0");
+				off.fr = ((this.spFreelance.selectedIndex == 2) ? "1" : "0");
+				off.cid = this.spCategory.selectedItem.cid;
+				off.tt = this.txtTitle.text;
+				off.em = this.txtEmail.text;
+				off.pos = this.txtPositivism.text;
+				off.neg = this.txtNegativism.text;
 
 				var errorMessage:String = "";
-				var validationError:Boolean = true;
-				if (off.title.equals(""))
-					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Title') : resourceManager.getString('resources','post_error_Company_Title'));
-				else if (off.email.equals(""))
-					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Email') : resourceManager.getString('resources','post_error_Company_Email'));
-				else if (off.positivism.equals(""))
-					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Positiv') : resourceManager.getString('resources','post_error_Company_Positiv'));
-				else if (off.negativism.equals(""))
-					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Negativ') : resourceManager.getString('resources','post_error_Company_Negativ'));
-				else if (off.category == 0)
+				if (off.cid == 0)
 					errorMessage = resourceManager.getString('resources','post_error_Category');
+				else if (off.tt == "")
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Title') : resourceManager.getString('resources','post_error_Company_Title'));
+				else if (off.em == "")
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Email') : resourceManager.getString('resources','post_error_Company_Email'));
+				else if (off.pos == "")
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Positiv') : resourceManager.getString('resources','post_error_Company_Positiv'));
+				else if (off.neg == "")
+					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Negativ') : resourceManager.getString('resources','post_error_Company_Negativ'));
 				else
-					validationError = false;
+					errorMessage = "";
 
-				if (validationError) {
+				if (errorMessage != "") {
 					var _alert:AlertMsgPost = new AlertMsgPost();
 					_alert.open(this, true);
 					_alert.alertPostTitleWindow.title = resourceManager.getString('resources','menu_PostN');
@@ -111,21 +128,27 @@
 				}
 			}
 			
-			public function postFinished(event:Event):void {
+			public function postFinished(event:events.DataEvent):void {
 				AppSettings.getInstance().logThis(null, "Post finished ... ");
-				this.removeEventListener("postFinished", postFinished);
-				this.spHuman.selectedIndex == 0;
-				this.spFreelance.selectedIndex == 0;
-				this.spCategory.selectedIndex = 0;
-				this.txtTitle.text = "";
-				this.txtEmail.text = "";
-				this.txtPositivism.text = "";
-				this.txtNegativism.text = "";
+				
+				var postResponse:String = resourceManager.getString('resources','post_OfferSuccess');
+				if (event.data.postResponse == "true") {
+					this.removeEventListener("postFinished", postFinished);
+					this.spHuman.selectedIndex == 0;
+					this.spFreelance.selectedIndex == 0;
+					this.spCategory.selectedIndex = 0;
+					this.txtTitle.text = "";
+					this.txtEmail.text = "";
+					this.txtPositivism.text = "";
+					this.txtNegativism.text = "";
+				}
+				else
+					postResponse = resourceManager.getString('resources', event.data.postResponse);
 
 				var _alert:AlertMsgPost = new AlertMsgPost();
 				_alert.open(this, true);
 				_alert.alertPostTitleWindow.title = resourceManager.getString('resources','menu_PostN');
-				_alert.alertPostText.text = resourceManager.getString('resources','post_OfferSuccess');
+				_alert.alertPostText.text = postResponse;
 				_alert.move(((this.width / 2) - (_alert.width / 2)), ((this.height / 2) - (_alert.height / 2)));
 			}
 			
@@ -174,7 +197,7 @@
 			<s:TextArea id="txtNegativism" width="100%" height="115" />
 			<s:Spacer height="10" />
 			<s:HGroup horizontalAlign="center" width="100%">
-				<s:Button id="btnPost" label="Search..." skinClass="skins.BoomButtonSkin" click="btnPost_clickHandler(event)" />
+				<s:Button id="btnPost" label="Boom..." skinClass="skins.BoomButtonSkin" click="btnPost_clickHandler(event)" />
 			</s:HGroup>
 		</s:VGroup>
 	</s:Scroller>

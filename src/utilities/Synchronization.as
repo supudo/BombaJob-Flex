@@ -1,11 +1,14 @@
 package utilities {
 	import com.adobe.fiber.services.wrapper.HTTPServiceWrapper;
 	import com.adobe.serializers.json.JSONDecoder;
+	import com.adobe.serializers.json.JSONEncoder;
 	
 	import database.DataModel;
 	import database.Database;
 	import database.DatabaseEvent;
 	import database.DatabaseResponder;
+	
+	import events.DataEvent;
 	
 	import flash.events.Event;
 	
@@ -160,6 +163,10 @@ package utilities {
 					this.handleSearchOffers(jsonResponse);
 					break;
 				}
+				case this.SERVICE_ID_POSTOFFER: {
+					this.handlePostOffer(jsonResponse);
+					break;
+				}
 				default: {
 					break;
 				}
@@ -218,6 +225,18 @@ package utilities {
 			this.dispatchEvent(new Event("searchFinished", true));
 		}
 		
+		private function handlePostOffer(jsonResponse:String):void {
+			var returnObject:Object = new Object();
+			var response:Object = JSON.parse(jsonResponse);
+			if (response != null && response.postNewJob != null) {
+				if (response.postNewJob.result == "true")
+					returnObject.postResponse = "true";
+				else
+					returnObject.postResponse = response.postNewJob.result;
+			}
+			this.dispatchEvent(new DataEvent("postFinished", true, false, returnObject));
+		}
+		
 		/**
 		 * Publics
 		 **/
@@ -232,6 +251,18 @@ package utilities {
 		}
 		
 		public function postOffer(off:Object):void {
+			if (off != null) {
+				AppSettings.getInstance().logThis(null, "postOffer...");
+				this.ServiceID = this.SERVICE_ID_POSTOFFER;
+				var j:JSONEncoder = new JSONEncoder();
+				var json:String = j.encode(off);
+				this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_POSTOFFER;
+				this.httpService.contentType = "application/json";
+				this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
+				this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
+				var token:AsyncToken = this.httpService.send(json);
+				token.addResponder(new mx.rpc.Responder(onJSONResult, onJSONFault));
+			}
 		}
 	}
 
