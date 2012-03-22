@@ -1,6 +1,5 @@
 package utilities {
 	import com.adobe.fiber.services.wrapper.HTTPServiceWrapper;
-	import com.adobe.serializers.json.JSONDecoder;
 	import com.adobe.serializers.json.JSONEncoder;
 	
 	import database.DataModel;
@@ -11,6 +10,8 @@ package utilities {
 	import events.DataEvent;
 	
 	import flash.events.Event;
+	import flash.net.URLRequest;
+	import flash.net.URLVariables;
 	
 	import mx.collections.ArrayCollection;
 	import mx.rpc.AsyncToken;
@@ -167,6 +168,10 @@ package utilities {
 					this.handlePostOffer(jsonResponse);
 					break;
 				}
+				case this.SERVICE_ID_SENDEMAIL: {
+					this.handleSendEmail(jsonResponse);
+					break;
+				}
 				default: {
 					break;
 				}
@@ -237,6 +242,10 @@ package utilities {
 			this.dispatchEvent(new DataEvent("postFinished", true, false, returnObject));
 		}
 		
+		private function handleSendEmail(jsonResponse:String):void {
+			this.dispatchEvent(new Event("offerEmailFinished", true));
+		}
+		
 		/**
 		 * Publics
 		 **/
@@ -254,13 +263,30 @@ package utilities {
 			if (off != null) {
 				AppSettings.getInstance().logThis(null, "postOffer...");
 				this.ServiceID = this.SERVICE_ID_POSTOFFER;
-				var j:JSONEncoder = new JSONEncoder();
-				var json:String = j.encode(off);
 				this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_POSTOFFER;
-				this.httpService.contentType = "application/json";
 				this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
 				this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
-				var token:AsyncToken = this.httpService.send(json);
+				this.httpService.method = "POST";
+				this.httpService.useProxy = false;
+				this.httpService.contentType = HTTPService.CONTENT_TYPE_FORM;
+				this.httpService.showBusyCursor = true;
+				var token:AsyncToken = this.httpService.send({jsonobj:JSON.stringify(off)});
+				token.addResponder(new mx.rpc.Responder(onJSONResult, onJSONFault));
+			}
+		}
+		
+		public function sendOfferEmail(oid:int, off:Object):void {
+			if (off != null) {
+				AppSettings.getInstance().logThis(null, "sendOfferEmail...");
+				this.ServiceID = this.SERVICE_ID_SENDEMAIL;
+				this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_SENDEMAIL + "&oid=" + oid;
+				this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
+				this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
+				this.httpService.method = "POST";
+				this.httpService.useProxy = false;
+				this.httpService.contentType = HTTPService.CONTENT_TYPE_FORM;
+				this.httpService.showBusyCursor = true;
+				var token:AsyncToken = this.httpService.send({jsonobj:JSON.stringify(off)});
 				token.addResponder(new mx.rpc.Responder(onJSONResult, onJSONFault));
 			}
 		}

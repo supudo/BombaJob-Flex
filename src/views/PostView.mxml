@@ -8,6 +8,7 @@
 	<fx:Metadata>
 		[ResourceBundle("resources")]
 	</fx:Metadata> 
+
 	<fx:Script>
 		<![CDATA[
 			import events.DataEvent;
@@ -19,6 +20,7 @@
 			import spark.events.ViewNavigatorEvent;
 			
 			import utilities.AppSettings;
+			import utilities.Funcs;
 			import utilities.Synchronization;
 
 			protected var _sync:Synchronization;
@@ -90,7 +92,7 @@
 			}
 			
 			protected function btnPost_clickHandler(event:MouseEvent):void {
-				var off:Object = new Object();
+				var off:Object = {};
 				off.h = ((this.spHuman.selectedIndex == 2) ? "1" : "0");
 				off.fr = ((this.spFreelance.selectedIndex == 2) ? "1" : "0");
 				off.cid = this.spCategory.selectedItem.cid;
@@ -98,13 +100,15 @@
 				off.em = this.txtEmail.text;
 				off.pos = this.txtPositivism.text;
 				off.neg = this.txtNegativism.text;
+				
+				var f:Funcs = new Funcs();
 
 				var errorMessage:String = "";
 				if (off.cid == 0)
 					errorMessage = resourceManager.getString('resources','post_error_Category');
 				else if (off.tt == "")
 					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Title') : resourceManager.getString('resources','post_error_Company_Title'));
-				else if (off.em == "")
+				else if (!f.emailIsValid(off.em))
 					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Email') : resourceManager.getString('resources','post_error_Company_Email'));
 				else if (off.pos == "")
 					errorMessage = ((this.spHuman.selectedIndex) ? resourceManager.getString('resources','post_error_Human_Positiv') : resourceManager.getString('resources','post_error_Company_Positiv'));

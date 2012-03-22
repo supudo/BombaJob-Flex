@@ -33,6 +33,7 @@
       <libraryPathEntry kind="3" linkType="1" path="${DCD_FIBER_LOCATION}/fiber.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="${DCD_FIBER_LOCALE_LOCATION}/fiber_rb.swc" useDefaultLinkType="false"/>
       <libraryPathEntry kind="3" linkType="1" path="${DCD_FIBER_LOCATION}/playerfds.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="/Users/supudo/_Software/_Flex/BombaJob/_ext/GraphAPI_Mobile_1_8_1.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath/>
   </compiler>

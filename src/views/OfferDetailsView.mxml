@@ -12,12 +12,21 @@
 
 	<fx:Script>
 		<![CDATA[
+			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			
+			import spark.components.SkinnablePopUpContainer;
+			import spark.components.SpinnerList;
+			import spark.components.SpinnerListContainer;
+			import spark.events.IndexChangeEvent;
 			import spark.events.ViewNavigatorEvent;
-			import spark.primitives.BitmapImage;
+			import spark.skins.spark.ApplicationSkin;
 			
+			import utilities.AppSettings;
 			import utilities.Funcs;
+			import utilities.SNFacebook;
+			import utilities.SNTwitter;
+			import utilities.Synchronization;
 
 			[Embed(source='assets/images/action-back.png')]
 			private var iconBack:Class;
@@ -27,6 +36,17 @@
 			
 			private var superView:View;
 			private var jobsYn:Boolean;
+			
+			private var currentOffer:Object;
+			protected var _sync:Synchronization;
+
+			[Bindable]
+			private var socNets:ArrayCollection;
+			
+			private var _alertEmail:AlertMsgEmail;
+			private var _alert:AlertMsgShare;
+			
+			private var funcs:Funcs = new Funcs();
 			
 			override public function createReturnObject():Object {
 				var returnedObject:Object = new Object();
@@ -38,21 +58,26 @@
 
 			protected function offDetails_viewActivateHandler(event:ViewNavigatorEvent):void {
 				this.title = resourceManager.getString('resources','menu_OfferDetails');
-
-				var f:Funcs = new Funcs();
+				
+				this.socNets = new ArrayCollection();
+				this.socNets.addItem(resourceManager.getString('resources','share_MenuShare'));
+				this.socNets.addItem(resourceManager.getString('resources','share_MenuFacebook'));
+				this.socNets.addItem(resourceManager.getString('resources','share_MenuTwitter'));
+				this.socNets.addItem(resourceManager.getString('resources','share_MenuEmail'));
+				this.socNets.addItem(resourceManager.getString('resources','share_MenuCancel'));
 
 				this.lblFreelanceLabel.text = resourceManager.getString('resources','odetails_Freelance');
 				this.lblPositivismLabel.text = resourceManager.getString('resources','odetails_Human_Positiv');
 				this.lblNegativismLabel.text = resourceManager.getString('resources','odetails_Human_Negativ');
 				if (data != null) {
 					this.actionBarVisible = data.showActionBar;
-					var off:Object = data.itemObject;
+					this.currentOffer = data.itemObject; 
 
 					if (this.actionBarVisible)
-						this.title = off.title;
+						this.title = this.currentOffer.title;
 					else if (data.superView != null) {
 						this.superView = data.superView as View;
-						this.superView.title = off.title;
+						this.superView.title = this.currentOffer.title;
 						this.jobsYn = data.jobsYn;
 
 						var btnBack:Button = new spark.components.Button();
@@ -68,16 +93,16 @@
 						this.superView.actionContent.push(btnShare);
 					}
 
-					if (off.humanyn) {
+					if (this.currentOffer.humanyn) {
 						this.lblPositivismLabel.text = resourceManager.getString('resources','odetails_Company_Positiv');
 						this.lblNegativismLabel.text = resourceManager.getString('resources','odetails_Company_Negativ');
 					}
-					this.lblCategory.text = off.categorytitle;
-					this.lblTitle.text = off.title;
-					this.lblDate.text = f.getFullDate(off.publishdate as Date, new Date(), true);
-					this.lblFreelance.text = (off.freelanceyn ? resourceManager.getString('resources','yes') : resourceManager.getString('resources','no'));
-					this.lblPositivism.text = off.positivism;
-					this.lblNegativism.text = off.negativism;
+					this.lblCategory.text = this.currentOffer.categorytitle;
+					this.lblTitle.text = this.currentOffer.title;
+					this.lblDate.text = this.funcs.getFullDate(this.currentOffer.publishdate as Date, new Date(), true);
+					this.lblFreelance.text = (this.currentOffer.freelanceyn ? resourceManager.getString('resources','yes') : resourceManager.getString('resources','no'));
+					this.lblPositivism.text = this.currentOffer.positivism;
+					this.lblNegativism.text = this.currentOffer.negativism;
 				}
 			}
 			
@@ -86,13 +111,162 @@
 			}
 			
 			protected function btnShare_clickHandler(event:MouseEvent):void {
+				this.spCont.visible = true;
+				this.spCont.move(this.width - this.spCont.width - 4, 4);
+				this.spShareNets.selectedIndex = 0;
 			}
 			
+			protected function spCategory_changeHandler(event:IndexChangeEvent):void {
+				switch(this.spShareNets.selectedIndex) {
+					case 1: {
+						// Facebook
+						var fbPost:String = "BombaJob.bg - " + this.currentOffer.title;
+						fbPost += " http://bombajob.bg/offer/" + this.currentOffer.oid;
+						var engineFacebook:SNFacebook = new SNFacebook(stage);
+						engineFacebook._view = this;
+						engineFacebook.PostToFacebook(fbPost);
+						break;
+					}
+					case 2: {
+						// Twitter
+						var tweet:String = "BombaJob.bg - " + this.currentOffer.title;
+						tweet += " http://bombajob.bg/offer/" + this.currentOffer.oid;
+						tweet += " #bombajobbg";
+						var engineTwitter:SNTwitter = new SNTwitter(stage);
+						engineTwitter._view = this;
+						engineTwitter.PostToTwitter(tweet);
+						break;
+					}
+					case 3: {
+						// Email
+						if (AppSettings.getInstance().stInAppEmail) {
+							var emailBody:String = "";
+							emailBody += this.currentOffer.title + "<br /><br />";
+							emailBody += "<b>" + this.currentOffer.title + "</b><br /><br />";
+							emailBody += "<i>" + this.funcs.getPrintDate(this.currentOffer.publishdate as Date) + "</i><br /><br />";
+							emailBody += resourceManager.getString('resources','odetails_Freelance') + " " + ((this.currentOffer.freelanceyn as Boolean) ? resourceManager.getString('resources','yes') : resourceManager.getString('resources','no')) + "<br /><br />";
+							if (this.currentOffer.humanyn) {
+								emailBody += "<b>" + resourceManager.getString('resources','odetails_Human_Positiv') + "</b> " + this.currentOffer.positivism + "<br /><br />";
+								emailBody += "<b>" + resourceManager.getString('resources','odetails_Human_Negativ') + "</b> " + this.currentOffer.negativism + "<br /><br />";
+							}
+							else {
+								emailBody += "<b>" + resourceManager.getString('resources','odetails_Company_Positiv') + "</b> " + this.currentOffer.positivism + "<br /><br />";
+								emailBody += "<b>" + resourceManager.getString('resources','odetails_Company_Negativ') + "</b> " + this.currentOffer.negativism + "<br /><br />";
+							}
+							emailBody += "<br /><br /> Sent from BombaJob ...";
+							
+							var m:String = "mailto:?subject=" + resourceManager.getString('resources','message_subject') + "&body=" + emailBody;
+							var urlRequest:URLRequest = new URLRequest(m);
+							navigateToURL(urlRequest);
+						}
+						else {
+							this._alertEmail = new AlertMsgEmail();
+							this._alertEmail.open(this, true);
+							this._alertEmail.alertPostTitleWindow.title = resourceManager.getString('resources','send_message');
+							this._alertEmail.alertFrom.text = resourceManager.getString('resources','message_fromEmail');
+							this._alertEmail.alertTo.text = resourceManager.getString('resources','message_toEmail');
+							if (AppSettings.getInstance().stStorePrivateData)
+								this._alertEmail.alertTxtFrom.text = AppSettings.getInstance().stPDEmail;
+							this._alertEmail.addEventListener("alertOK_clickHandler", alertOK_clickHandler);
+							this._alertEmail.move(((this.width / 2) - (this._alertEmail.width / 2)), ((this.height / 2) - (this._alertEmail.height / 2)));
+						}
+						break;
+					}
+					default: {
+						this.spCont.visible = false;
+						break;
+					}
+				}
+				this.spCont.visible = false;
+			}
+			
+			protected function alertOK_clickHandler(event:Event):void {
+				var emailTo:String, emailFrom:String;
+				emailTo = this._alertEmail.alertTxtTo.text;
+				emailFrom = this._alertEmail.alertTxtFrom.text;
+
+				if (this.funcs.emailIsValid(emailTo) && this.funcs.emailIsValid(emailFrom)) {
+					this._alertEmail.removeEventListener("alertOK_clickHandler", alertOK_clickHandler);
+					this._alertEmail.close();
+					var _sync:Synchronization = new Synchronization(null);
+					_sync.dbHelper = AppSettings.getInstance().dbHelper;
+					_sync.addEventListener("offerEmailFinished", offerEmailFinished);
+					_sync.sendOfferEmail(this.currentOffer.oid, {to: emailTo, from: emailFrom});
+				}
+				else
+					this.showAlert(resourceManager.getString('resources','message_invalidEmail'));
+			}
+			
+			public function offerEmailFinished(event:Event):void {
+				this.showAlert(resourceManager.getString('resources','email_sent'));
+			}
+			
+			public function postFacebookFinished(result:Object, fail:Object):void {
+				if (result)
+					this.showAlert(resourceManager.getString('resources','facebook_publishok'));
+				else if (fail != null && fail.error != null && fail.error.code == "506")
+					this.showAlert(resourceManager.getString('resources','facebook_err_duplicate'));
+				else
+					this.showAlert(resourceManager.getString('resources','facebook_publisherror'));
+			}
+			
+			public function postTwitterFinished(result:Object, fail:Object):void {
+				if (result)
+					this.showAlert(resourceManager.getString('resources','twitter_publishok'));
+				else if (fail != null && fail.error != null && fail.error.code == "506")
+					this.showAlert(resourceManager.getString('resources','twitter_err_duplicate'));
+				else
+					this.showAlert(resourceManager.getString('resources','twitter_publisherror'));
+			}
+			
+			private function showAlert(msg:String):void {
+				this._alert = new AlertMsgShare();
+				this._alert.open(this, true);
+				this._alert.alertPostTitleWindow.title = resourceManager.getString('resources','share_MenuShareN');
+				this._alert.alertText.text = msg;
+				this._alert.move(((this.width / 2) - (this._alert.width / 2)), ((this.height / 2) - (this._alert.height / 2)));
+			}
 		]]>
 	</fx:Script>
 
 	<fx:Declarations>
-		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<fx:Component className="AlertMsgEmail">
+			<s:SkinnablePopUpContainer x="0" y="0">
+				<fx:Script>
+					<![CDATA[
+						import flash.events.Event;
+						
+						protected function alertOK_clickHandler(event:Event):void {
+							this.dispatchEvent(new Event("alertOK_clickHandler", true));
+						}
+					]]>
+				</fx:Script>
+				<s:TitleWindow id="alertPostTitleWindow" title="" close="close()">
+					<s:VGroup horizontalAlign="center" verticalAlign="middle" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+						<s:HGroup>
+							<s:Label id="alertFrom" text="From"/>
+							<s:TextInput id="alertTxtFrom" width="100%" />
+						</s:HGroup>
+						<s:Spacer height="10" />
+						<s:HGroup>
+							<s:Label id="alertTo" text="To"/>
+							<s:TextInput id="alertTxtTo" width="100%" />
+						</s:HGroup>
+						<s:Button id="alertOK" label="OK" click="alertOK_clickHandler(event)"/>
+					</s:VGroup>
+				</s:TitleWindow>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
+		<fx:Component className="AlertMsgShare">
+			<s:SkinnablePopUpContainer x="0" y="0">
+				<s:TitleWindow id="alertPostTitleWindow" title="" close="close()">
+					<s:VGroup horizontalAlign="center" verticalAlign="middle" paddingTop="8" paddingBottom="8" paddingLeft="8" paddingRight="8" gap="5" width="100%">
+						<s:Label id="alertText" text="No results!"/>
+						<s:Button id="alertOK" label="OK" click="close()"/>
+					</s:VGroup>
+				</s:TitleWindow>
+			</s:SkinnablePopUpContainer>
+		</fx:Component>
 	</fx:Declarations>
 	
 	<fx:Style>
@@ -106,7 +280,11 @@
 		<s:Button id="btnShare" icon="@Embed('assets/images/action-share.png')" click="btnShare_clickHandler(event)" />
 	</s:actionContent>
 
-	<s:Scroller height="100%" width="100%">
+	<s:SpinnerListContainer width="280" id="spCont" visible="false" depth="1">
+		<s:SpinnerList id="spShareNets" width="100%" dataProvider="{socNets}" change="spCategory_changeHandler(event)" />
+	</s:SpinnerListContainer>
+
+	<s:Scroller height="100%" width="100%" depth="0">
 		<s:VGroup gap="10" paddingBottom="4" paddingTop="4" paddingLeft="4" paddingRight="4" width="100%" height="100%">
 			<s:Label id="lblCategory" text="Category..." width="100%" />
 			<s:Spacer height="6" />
