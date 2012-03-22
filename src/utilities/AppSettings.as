@@ -37,10 +37,10 @@ package utilities
 		public var stShowCategories:Boolean = true;
 		public var stOnlineSearch:Boolean = true;
 		public var stInAppEmail:Boolean = false;
-		public var socFacebookAppID:String = "162884250446512";
+		public var socFacebookAppID:String = "";
 		public var socFacebookAppURL:String = "";
-		public var TwitterConsumerKey:String = "uSlctvG45nI6JawDFzGHw";
-		public var TwitterConsumerSecret:String = "RGLWAZDxDBfqnw4i0LHTEEnfRPaYzAZQXZriSI1cI";
+		public var TwitterConsumerKey:String = "";
+		public var TwitterConsumerSecret:String = "";
 		public var AppCallbackURI:String = "bombajobflex";
 		public var TwitterCallbackURI:String = AppCallbackURI + "://twitter";
 		
