@@ -213,10 +213,8 @@
 			public function postTwitterFinished(result:Object, fail:Object):void {
 				if (result)
 					this.showAlert(resourceManager.getString('resources','twitter_publishok'));
-				else if (fail != null && fail.error != null && fail.error.code == "506")
-					this.showAlert(resourceManager.getString('resources','twitter_err_duplicate'));
 				else
-					this.showAlert(resourceManager.getString('resources','twitter_publisherror'));
+					this.showAlert(resourceManager.getString('resources','twitter_err_generic'));
 			}
 			
 			private function showAlert(msg:String):void {

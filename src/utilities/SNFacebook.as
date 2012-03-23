@@ -34,7 +34,7 @@ package utilities {
 			else {
 				AppSettings.getInstance().logThis(null, "onInit, No logged in. Possible error - " + fail.message);
 				var fbView:StageWebView = new StageWebView();
-				fbView.viewPort = new Rectangle(10, 10, this._stage.width - 10, this._stage.height - 10);
+				fbView.viewPort = new Rectangle(10, 10, this._stage.width - 30, this._stage.height - 30);
 				FacebookMobile.login(loginHandler, this._stage, ["publish_stream"], fbView);
 			}
 		}

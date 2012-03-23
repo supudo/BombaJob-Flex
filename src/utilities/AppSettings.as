@@ -41,8 +41,11 @@ package utilities
 		public var socFacebookAppURL:String = "";
 		public var TwitterConsumerKey:String = "";
 		public var TwitterConsumerSecret:String = "";
-		public var AppCallbackURI:String = "bombajobflex";
-		public var TwitterCallbackURI:String = AppCallbackURI + "://twitter";
+		public var AppCallbackURI:String = "http://www.bombajob.bg/";
+		//public var AppCallbackURI:String = "bombajobflex";
+		public var TwitterCallbackURI:String = AppCallbackURI;// + "://twitter";
+		public var TwitterOAuthToken:String = "";
+		public var TwitterOAuthTokenSecret:String = "";
 		
 		public function logThis(ctrl:View, ... args):void {
 			var output:String = "";
