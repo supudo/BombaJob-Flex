@@ -40,7 +40,6 @@ package utilities {
 		}
 		
 		public function Logout():void {
-			FacebookMobile.getSession().accessToken = "";
 			FacebookMobile.logout();
 		}
 		
