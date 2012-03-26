@@ -30,7 +30,7 @@ package utilities {
 		public function SNTwitter(stage:Stage) {
 			this._stage = stage;
 			this.tweetr = new Tweetr();
-			//this._stage.addEventListener(KeyboardEvent.KEY_DOWN, this.handleKeyEvent);
+			this._stage.addEventListener(KeyboardEvent.KEY_DOWN, this.handleKeyEvent);
 		}
 		
 		public function PostToTwitter(msg:String):void {
@@ -58,7 +58,7 @@ package utilities {
 			else
 				this.TWLogin();
 		}
-		
+
 		private function TWLogin():void {
 			AppSettings.getInstance().logThis(this._view, "[Twitter] Adding StageWebView Instance ..");
 			this.twWebView = new StageWebView();
@@ -113,18 +113,18 @@ package utilities {
 				}
 			}
 		}
-		
+
 		private function wvLocationChanged(event:LocationChangeEvent):void {
 			AppSettings.getInstance().logThis(this._view, "[Twitter] Location changed - " + event.location);
 			if (event.location.indexOf(AppSettings.getInstance().TwitterCallbackURI + "?denied=") >= 0) {
 				AppSettings.getInstance().logThis(this._view, "[Twitter] Twitter canceled!");
-				
-				this.tweetr = null;
-				this.twOAuth = null;
-				
-				this.twWebView.removeEventListener(LocationChangeEvent.LOCATION_CHANGE, this.wvLocationChanged);
-				this.twWebView.dispose();
-				this.twWebView = null;
+
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				if (this.twWebView) {
+					this.twWebView.dispose();
+					this.twWebView = null;
+				}
 			}
 		}
 	}
