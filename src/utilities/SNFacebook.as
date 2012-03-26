@@ -1,7 +1,6 @@
 package utilities {
 	
 	import com.adobe.serializers.json.JSONEncoder;
-	import com.facebook.graph.Facebook;
 	import com.facebook.graph.FacebookMobile;
 	
 	import flash.display.Stage;
@@ -25,14 +24,33 @@ package utilities {
 			this._message = msg;
 			FacebookMobile.init(AppSettings.getInstance().socFacebookAppID, initHandler);
 		}
+
+		public function IsLoggedIn():Boolean {
+			// API issue : http://code.google.com/p/facebook-actionscript-api/issues/detail?id=297
+			return true;
+			/*
+			var fbl:Boolean = false;
+			if (FacebookMobile.getSession() != null) {
+				var v2:Boolean = FacebookMobile.getSession().uid != null;
+				var v3:Boolean = FacebookMobile.getSession().uid != "";
+				fbl = v2 && v3;
+			}
+			return fbl;
+			*/
+		}
 		
-		protected function initHandler(result:Object, fail:Object):void {						
+		public function Logout():void {
+			FacebookMobile.getSession().accessToken = "";
+			FacebookMobile.logout();
+		}
+		
+		protected function initHandler(result:Object, fail:Object):void {
 			if (result) {
-				AppSettings.getInstance().logThis(null, "onInit, Already logged in.");
+				AppSettings.getInstance().logThis(null, "initHandler, Already logged in.");
 				this.postMessage();
 			}
 			else {
-				AppSettings.getInstance().logThis(null, "onInit, No logged in. Possible error - " + fail.message);
+				AppSettings.getInstance().logThis(null, "initHandler, No logged in. Possible error - " + fail.message);
 				var fbView:StageWebView = new StageWebView();
 				fbView.viewPort = new Rectangle(10, 10, this._stage.width - 30, this._stage.height - 30);
 				FacebookMobile.login(loginHandler, this._stage, ["publish_stream"], fbView);
@@ -40,8 +58,11 @@ package utilities {
 		}
 
 		protected function loginHandler(success:Object, fail:Object):void {
-			if (success)
+			if (success) {
+				if (success.uid != null && success.uid != "")
+					AppSettings.getInstance().FacebookUID = success.uid;
 				postMessage();
+			}
 			else if (fail != null && fail.error != null)
 				AppSettings.getInstance().logThis(null, "Login error - " + fail.error.code + " - " + fail.error.message);
 		}

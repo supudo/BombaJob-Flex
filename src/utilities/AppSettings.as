@@ -39,6 +39,7 @@ package utilities
 		public var stInAppEmail:Boolean = false;
 		public var socFacebookAppID:String = "";
 		public var socFacebookAppURL:String = "";
+		public var FacebookUID:String = "";
 		public var TwitterConsumerKey:String = "";
 		public var TwitterConsumerSecret:String = "";
 		public var AppCallbackURI:String = "http://www.bombajob.bg/";

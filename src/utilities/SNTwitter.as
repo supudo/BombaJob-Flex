@@ -30,7 +30,8 @@ package utilities {
 		public function SNTwitter(stage:Stage) {
 			this._stage = stage;
 			this.tweetr = new Tweetr();
-			this._stage.addEventListener(KeyboardEvent.KEY_DOWN, this.handleKeyEvent);
+			if (this._stage != null)
+				this._stage.addEventListener(KeyboardEvent.KEY_DOWN, this.handleKeyEvent);
 		}
 		
 		public function PostToTwitter(msg:String):void {
@@ -57,6 +58,22 @@ package utilities {
 			}
 			else
 				this.TWLogin();
+		}
+		
+		public function IsLoggedIn():Boolean {
+			return AppSettings.getInstance().TwitterOAuthToken != "" && AppSettings.getInstance().TwitterOAuthTokenSecret != "";
+		}
+		
+		public function Logout():void {
+			if (AppSettings.getInstance().TwitterOAuthToken != "" && AppSettings.getInstance().TwitterOAuthTokenSecret != "") {
+				this.twOAuth = new OAuth();
+				this.twOAuth.oauthToken = AppSettings.getInstance().TwitterOAuthToken;
+				this.twOAuth.oauthTokenSecret = AppSettings.getInstance().TwitterOAuthTokenSecret;
+				this.tweetr.oAuth = this.twOAuth;
+				this.tweetr.endSession();
+				AppSettings.getInstance().TwitterOAuthToken = "";
+				AppSettings.getInstance().TwitterOAuthTokenSecret = "";
+			}
 		}
 
 		private function TWLogin():void {

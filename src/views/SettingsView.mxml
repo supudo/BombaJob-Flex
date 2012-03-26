@@ -14,6 +14,11 @@
 			import spark.events.ViewNavigatorEvent;
 			
 			import utilities.AppSettings;
+			import utilities.SNFacebook;
+			import utilities.SNTwitter;
+
+			private var engineFacebook:SNFacebook = new SNFacebook(null);
+			private var engineTwitter:SNTwitter = new SNTwitter(null);
 			
 			protected function settings_viewActivateHandler(event:ViewNavigatorEvent):void {
 				this.title = resourceManager.getString('resources','menu_Settings');
@@ -30,6 +35,16 @@
 				this.chkShowCategories.selected = AppSettings.getInstance().stShowCategories;
 				this.chkOnlineSearch.selected = AppSettings.getInstance().stOnlineSearch;
 				this.chkInAppEmail.selected = AppSettings.getInstance().stInAppEmail;
+				
+				this.snLogoutFacebook.label = resourceManager.getString('resources','share_Facebook_Logout');
+				this.snLogoutTwitter.label = resourceManager.getString('resources','share_Twitter_Logout');
+
+				var snf:Boolean = this.engineFacebook.IsLoggedIn();
+				var snt:Boolean = this.engineTwitter.IsLoggedIn();
+				if (snf || snt)
+					this.grpSocNets.visible = true;
+				this.snLogoutFacebook.visible = snf;
+				this.snLogoutTwitter.visible = snt;
 			}
 			
 			protected function chkStorePrivateData_changeHandler(event:Event):void {
@@ -56,6 +71,19 @@
 				AppSettings.getInstance().saveAppSettings();
 			}
 			
+			protected function btnLFB_clickHandler(event:MouseEvent):void {
+				this.engineFacebook.Logout();
+				this.snLogoutFacebook.visible = false;
+				if (!this.snLogoutFacebook.visible && !this.snLogoutTwitter.visible)
+					this.grpSocNets.visible = false;
+			}
+			
+			protected function btnLTW_clickHandler(event:MouseEvent):void {
+				this.engineTwitter.Logout();
+				this.snLogoutTwitter.visible = false;
+				if (!this.snLogoutFacebook.visible && !this.snLogoutTwitter.visible)
+					this.grpSocNets.visible = false;
+			}
 		]]>
 	</fx:Script>
 
@@ -104,7 +132,20 @@
 				<s:Label id="lblInAppEmail" text="In-app email..." />
 			</s:HGroup>
 			<s:Spacer height="10" />
-			<s:Button id="btnSave" label="Save..." width="100%" click="btnSave_clickHandler(event)" />
+			<s:Button id="btnSave" label="Save..." skinClass="skins.BoomButtonSkin" click="btnSave_clickHandler(event)" />
+			<s:VGroup id="grpSocNets" visible="false" width="100%">
+				<s:Spacer height="10" />
+				<s:Line width="100%">
+					<s:stroke>
+						<s:SolidColorStroke color="#000000" weight="1" caps="square"/>
+					</s:stroke>
+				</s:Line>
+				<s:HGroup width="100%" horizontalAlign="left">
+					<s:Button id="snLogoutTwitter" label="Twitter Logout" width="100%" click="btnLTW_clickHandler(event)" />
+					<s:Spacer height="10" />
+					<s:Button id="snLogoutFacebook" label="Facebook Logout" width="100%" click="btnLFB_clickHandler(event)" />
+				</s:HGroup>
+			</s:VGroup>
 		</s:VGroup>
 	</s:Scroller>
 
