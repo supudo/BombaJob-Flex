@@ -2,8 +2,11 @@
 <s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		xmlns:s="library://ns.adobe.com/flex/spark"
 		title="TabApp"
-		creationComplete="tabapp_creationCompleteHandler(event)"
-		viewActivate="tabapp_viewActivateHandler(event)">
+		creationComplete="tabapp_creationCompleteHandler(event)">
+	
+	<fx:Metadata>
+		[ResourceBundle("resources")]
+	</fx:Metadata>
 
 	<fx:Script>
 		<![CDATA[
@@ -18,10 +21,7 @@
 			
 			protected function tabapp_creationCompleteHandler(event:FlexEvent):void {
 				this.addEventListener("syncComplete", reloadItems);
-			}
-			
-			protected function tabapp_viewActivateHandler(event:ViewNavigatorEvent):void {
-				this.tbNewestOffers.label = resourceManager.getString('resources','menu_NewestOffers');
+				this.tbNewestOffers.label = resourceManager.getString('resources','menu_Tab_NewestOffers');
 				this.tbJobs.label = resourceManager.getString('resources','menu_Jobs');
 				this.tbPeople.label = resourceManager.getString('resources','menu_People');
 				this.tbSearch.label = resourceManager.getString('resources','menu_Search');
@@ -53,14 +53,14 @@
 	</fx:Declarations>
 	
 	<s:TabbedViewNavigator id="tabApp" width="100%" height="100%" change="tabApp_changeHandler(event)">
-		<s:ViewNavigator id="tbNewestOffers" label="Newest Offers" width="100%" height="100%" firstView="views.NewestOffersView"/>
-		<s:ViewNavigator id="tbJobs" label="Jobs" width="100%" height="100%" firstView="views.SearchJobsView"/>
-		<s:ViewNavigator id="tbPeople" label="People" width="100%" height="100%" firstView="views.SearchPeopleView"/>
-		<s:ViewNavigator id="tbSearch" label="Search" width="100%" height="100%" firstView="views.SearchView"/>
-		<s:ViewNavigator id="tbPost" label="Post" width="100%" height="100%" firstView="views.PostView"/>
-		<s:ViewNavigator id="tbSettings" label="Settings" width="100%" height="100%" firstView="views.SettingsView"/>
-		<s:ViewNavigator id="tbSync" label="Sync" width="100%" height="100%" firstView="views.SyncView"/>
-		<s:ViewNavigator id="tbAbout" label="About" width="100%" height="100%" firstView="views.AboutView"/>
+		<s:ViewNavigator id="tbNewestOffers" icon="@Embed('assets/images/tabs/tbnewest.png')" label="Newest" width="100%" height="100%" firstView="views.NewestOffersView"/>
+		<s:ViewNavigator id="tbJobs" icon="@Embed('assets/images/tabs/tbjobs.png')" label="Jobs" width="100%" height="100%" firstView="views.SearchJobsView"/>
+		<s:ViewNavigator id="tbPeople" icon="@Embed('assets/images/tabs/tbpeople.png')" label="People" width="100%" height="100%" firstView="views.SearchPeopleView"/>
+		<s:ViewNavigator id="tbSearch" icon="@Embed('assets/images/tabs/tbsearch.png')" label="Search" width="100%" height="100%" firstView="views.SearchView"/>
+		<s:ViewNavigator id="tbPost" icon="@Embed('assets/images/tabs/tbpostoffer.png')" label="Post" width="100%" height="100%" firstView="views.PostView"/>
+		<s:ViewNavigator id="tbSettings" icon="@Embed('assets/images/tabs/tbsettings.png')" label="Settings" width="100%" height="100%" firstView="views.SettingsView"/>
+		<s:ViewNavigator id="tbSync" icon="@Embed('assets/images/tabs/tbsync.png')" label="Sync" width="100%" height="100%" firstView="views.SyncView"/>
+		<s:ViewNavigator id="tbAbout" icon="@Embed('assets/images/tabs/tbabout.png')" label="About" width="100%" height="100%" firstView="views.AboutView"/>
 	</s:TabbedViewNavigator>
 
 </s:View>

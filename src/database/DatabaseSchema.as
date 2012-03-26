@@ -17,7 +17,7 @@ package database {
 		public const GET_CATEGORIES:String = "SELECT * FROM categories ORDER BY title";
 		public const GET_CATEGORY:String = "SELECT * FROM categories WHERE cid = :cid";
 
-		public const GET_JOBOFFERS:String = "SELECT * FROM job_offers";
+		public const GET_JOBOFFERS:String = "SELECT * FROM job_offers ORDER BY publishdate DESC";
 		public const GET_JOBOFFERS_FOR_JOBOFFER_ID:String = "SELECT * FROM job_offers WHERE oid = :oid";
 		public const GET_JOBOFFERS_FOR_CATEGORY_ID:String = "SELECT * FROM job_offers WHERE cid = :cid";
 		public const GET_JOBOFFERS_FOR_HUMAN:String = "SELECT * FROM job_offers WHERE humanyn = :humanyn";

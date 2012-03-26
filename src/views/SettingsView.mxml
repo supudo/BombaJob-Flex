@@ -14,8 +14,8 @@
 			import spark.events.ViewNavigatorEvent;
 			
 			import utilities.AppSettings;
-			import utilities.SNFacebook;
-			import utilities.SNTwitter;
+			import socnet.SNFacebook;
+			import socnet.SNTwitter;
 
 			private var engineFacebook:SNFacebook = new SNFacebook(null);
 			private var engineTwitter:SNTwitter = new SNTwitter(null);
@@ -38,8 +38,9 @@
 				
 				this.snLogoutFacebook.label = resourceManager.getString('resources','share_Facebook_Logout');
 				this.snLogoutTwitter.label = resourceManager.getString('resources','share_Twitter_Logout');
-
-				var snf:Boolean = this.engineFacebook.IsLoggedIn();
+				
+				///~ API issue : http://code.google.com/p/facebook-actionscript-api/issues/detail?id=297
+				var snf:Boolean = false;//this.engineFacebook.IsLoggedIn();
 				var snt:Boolean = this.engineTwitter.IsLoggedIn();
 				if (snf || snt)
 					this.grpSocNets.visible = true;

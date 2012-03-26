@@ -24,8 +24,8 @@
 			
 			import utilities.AppSettings;
 			import utilities.Funcs;
-			import utilities.SNFacebook;
-			import utilities.SNTwitter;
+			import socnet.SNFacebook;
+			import socnet.SNTwitter;
 			import utilities.Synchronization;
 
 			[Embed(source='assets/images/action-back.png')]
