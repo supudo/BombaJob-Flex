@@ -16,9 +16,6 @@
 
 	<fx:Script>
 		<![CDATA[
-			import database.Database;
-			import database.DatabaseResponder;
-			
 			import models.JobOfferModel;
 			
 			import mx.collections.ArrayCollection;
@@ -29,8 +26,6 @@
 			
 			import utilities.AppSettings;
 			import utilities.Funcs;
-
-			private var dbHelper:Database;
 			
 			[Bindable]
 			private var offersModel:JobOfferModel;
@@ -45,23 +40,23 @@
 			}
 
 			public function loadItems(event:Event):void {
-				this.offersModel = JobOfferModel.getInstance();
-				this.dbHelper = new Database();
-				this.dbHelper.init(new DatabaseResponder());
-				var offs:Array = this.dbHelper.getJobOffers();
-				
-				if (offs != null) {
-					this.removeEventListener("syncComplete", loadItems);
-					var f:Funcs = new Funcs();
+				if (AppSettings.getInstance().dbHelper != null) {
+					this.offersModel = JobOfferModel.getInstance();
+					var offs:Array = AppSettings.getInstance().dbHelper.getJobOffers();
 					
-					if (this.offersModel.items == null) {
-						this.offersModel.items = new ArrayCollection();
-						var off:Object, obj:Object;
-						var today:Date = new Date();
-						for (var i:int=0; i<offs.length; i++) {
-							off = offs[i];
-							off.listtitle = f.getFullDate(off.publishdate as Date, today, false) + " // " + off.title;
-							this.offersModel.items.addItem(off);
+					if (offs != null) {
+						this.removeEventListener("syncComplete", loadItems);
+						var f:Funcs = new Funcs();
+						
+						if (this.offersModel.items == null) {
+							this.offersModel.items = new ArrayCollection();
+							var off:Object, obj:Object;
+							var today:Date = new Date();
+							for (var i:int=0; i<offs.length; i++) {
+								off = offs[i];
+								off.listtitle = f.getFullDate(off.publishdate as Date, today, false) + " // " + off.title;
+								this.offersModel.items.addItem(off);
+							}
 						}
 					}
 				}

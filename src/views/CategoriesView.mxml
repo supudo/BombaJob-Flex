@@ -17,9 +17,6 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import database.Database;
-			import database.DatabaseResponder;
-			
 			import models.CategoryModel;
 			
 			import mx.collections.ArrayCollection;
@@ -30,8 +27,6 @@
 			
 			import utilities.AppSettings;
 			import utilities.Funcs;
-			
-			private var dbHelper:Database;
 			
 			[Bindable]
 			private var itemsModel:CategoryModel;
@@ -47,18 +42,19 @@
 
 			public function loadItems(event:Event):void {
 				this.itemsModel = CategoryModel.getInstance();
-				this.dbHelper = AppSettings.getInstance().dbHelper;
-				var ents:Array = this.dbHelper.getCategories();
-				
-				if (ents != null) {
-					var f:Funcs = new Funcs();
+				if (AppSettings.getInstance().dbHelper != null) {
+					var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
 					
-					if (this.itemsModel.items == null) {
-						this.itemsModel.items = new ArrayCollection();
-						var ent:Object, obj:Object;
-						var today:Date = new Date();
-						for (var i:int=0; i<ents.length; i++)
-							this.itemsModel.items.addItem(ents[i]);
+					if (ents != null) {
+						var f:Funcs = new Funcs();
+						
+						if (this.itemsModel.items == null) {
+							this.itemsModel.items = new ArrayCollection();
+							var ent:Object, obj:Object;
+							var today:Date = new Date();
+							for (var i:int=0; i<ents.length; i++)
+								this.itemsModel.items.addItem(ents[i]);
+						}
 					}
 				}
 			}

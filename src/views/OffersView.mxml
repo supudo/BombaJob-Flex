@@ -18,9 +18,6 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import database.Database;
-			import database.DatabaseResponder;
-			
 			import events.ViewEvent;
 			
 			import models.JobOfferModel;
@@ -35,7 +32,6 @@
 			import utilities.AppSettings;
 			import utilities.Funcs;
 			
-			private var dbHelper:Database;
 			private var superViewJobs:SearchJobsView;
 			private var superViewPeople:SearchPeopleView;
 			private var humanYn:Boolean = false;
@@ -77,29 +73,30 @@
 			}
 			
 			public function loadItems(event:Event):void {
-				this.offersModel = JobOfferModel.getInstance();
-				this.dbHelper = AppSettings.getInstance().dbHelper;
+				if (AppSettings.getInstance().dbHelper != null) {
+					this.offersModel = JobOfferModel.getInstance();
 
-				var offs:Array = null;
-				if (this.categoryID > 0)
-					offs = this.dbHelper.getJobOffersComplex(this.humanYn, this.categoryID);
-				else
-					offs = this.dbHelper.getJobOfferForHuman(this.humanYn);
-
-				if (offs != null) {
-					var f:Funcs = new Funcs();
-					
-					if (this.offersModel.items == null)
-						this.offersModel.items = new ArrayCollection();
+					var offs:Array = null;
+					if (this.categoryID > 0)
+						offs = AppSettings.getInstance().dbHelper.getJobOffersComplex(this.humanYn, this.categoryID);
 					else
-						this.offersModel.items.removeAll();
-
-					var off:Object, obj:Object;
-					var today:Date = new Date();
-					for (var i:int=0; i<offs.length; i++) {
-						off = offs[i];
-						off.listtitle = f.getFullDate(off.publishdate as Date, today, false) + " // " + off.title;
-						this.offersModel.items.addItem(off);
+						offs = AppSettings.getInstance().dbHelper.getJobOfferForHuman(this.humanYn);
+	
+					if (offs != null) {
+						var f:Funcs = new Funcs();
+						
+						if (this.offersModel.items == null)
+							this.offersModel.items = new ArrayCollection();
+						else
+							this.offersModel.items.removeAll();
+	
+						var off:Object, obj:Object;
+						var today:Date = new Date();
+						for (var i:int=0; i<offs.length; i++) {
+							off = offs[i];
+							off.listtitle = f.getFullDate(off.publishdate as Date, today, false) + " // " + off.title;
+							this.offersModel.items.addItem(off);
+						}
 					}
 				}
 			}
