@@ -12,9 +12,7 @@
 	
 	<fx:Script>
 		<![CDATA[
-			import events.ViewEvent;
 			import mx.events.FlexEvent;
-			import spark.events.IndexChangeEvent;
 			import utilities.AppSettings;
 			
 			protected function people_creationCompleteHandler(event:FlexEvent):void {
@@ -26,9 +24,8 @@
 					this.tbOffers.label = resourceManager.getString('resources','menu_Offers');
 				}
 				else {
-					this.tbView.visible = false;
 					this.viewOffers.visible = true;
-					this.viewOffers.activeView.dispatchEvent(new ViewEvent(ViewEvent.SearchPeopleView, this));
+					this.tbView.visible = false;
 				}
 			}
 			
@@ -36,11 +33,14 @@
 				this.title = resourceManager.getString('resources','menu_People');
 				this.navigationContent = null;
 				this.actionContent = null;
+				this.tbCategories.popToFirstView();
+				this.tbOffers.popToFirstView();
 			}
 			
-			protected function tbView_changeHandler(event:IndexChangeEvent):void {
-				if (event.newIndex == 1)
-					this.tbOffers.activeView.dispatchEvent(new ViewEvent(ViewEvent.SearchPeopleView, this));
+			public function resetView():void {
+				this.title = resourceManager.getString('resources','menu_People');
+				this.tbCategories.popToFirstView();
+				this.tbOffers.popToFirstView();
 			}
 			
 		]]>
@@ -52,7 +52,7 @@
 	
 	<s:ViewNavigator id="viewOffers" label="Offers" width="100%" height="100%" firstView="views.OffersView" />
 	
-	<s:TabbedViewNavigator id="tbView" skinClass="skins.TabbedViewNavigatorSkin" width="100%" height="100%" change="tbView_changeHandler(event)">
+	<s:TabbedViewNavigator id="tbView" skinClass="skins.TabbedViewNavigatorSkin" width="100%" height="100%">
 		<s:ViewNavigator id="tbCategories" icon="@Embed('assets/images/tbcategories.png')" label="Categories" width="100%" height="100%" firstView="views.CategoriesView"/>
 		<s:ViewNavigator id="tbOffers" icon="@Embed('assets/images/tboffers.png')" label="Jobs" width="100%" height="100%" firstView="views.OffersView"/>
 	</s:TabbedViewNavigator>

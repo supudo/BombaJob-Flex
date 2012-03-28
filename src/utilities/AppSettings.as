@@ -47,6 +47,7 @@ package utilities
 		public var TwitterCallbackURI:String = AppCallbackURI;// + "://twitter";
 		public var TwitterOAuthToken:String = "";
 		public var TwitterOAuthTokenSecret:String = "";
+		public var CurrentCategoryID:uint = 0;
 		
 		public function logThis(ctrl:View, ... args):void {
 			var output:String = "";

@@ -15,6 +15,9 @@
 			import mx.collections.ArrayCollection;
 			import mx.core.FlexGlobals;
 			
+			import socnet.SNFacebook;
+			import socnet.SNTwitter;
+			
 			import spark.components.SkinnablePopUpContainer;
 			import spark.components.SpinnerList;
 			import spark.components.SpinnerListContainer;
@@ -24,8 +27,6 @@
 			
 			import utilities.AppSettings;
 			import utilities.Funcs;
-			import socnet.SNFacebook;
-			import socnet.SNTwitter;
 			import utilities.Synchronization;
 
 			[Embed(source='assets/images/action-back.png')]
@@ -47,12 +48,16 @@
 			private var _alert:AlertMsgShare;
 			
 			private var funcs:Funcs = new Funcs();
-			
+
 			override public function createReturnObject():Object {
 				var returnedObject:Object = new Object();
 				returnedObject.resetBar = true;
 				returnedObject.superView = this.superView;
 				returnedObject.jobsYn = this.jobsYn;
+				returnedObject.categorytitle = this.currentOffer.categorytitle;
+				returnedObject.cid = 0;
+				if (AppSettings.getInstance().stShowCategories)
+					returnedObject.cid = this.currentOffer.cid;
 				return returnedObject;
 			}
 
@@ -111,7 +116,7 @@
 			}
 			
 			protected function btnShare_clickHandler(event:MouseEvent):void {
-				this.spCont.visible = true;
+				this.spCont.visible = !this.spCont.visible;
 				this.spCont.move(this.width - this.spCont.width - 4, 4);
 				this.spShareNets.selectedIndex = 0;
 			}

@@ -4,7 +4,6 @@
 		skinClass="skins.BJSkin"
 		title="Offers"
 		actionBarVisible="false"
-		creationComplete="offersView_creationCompleteHandler(event)"
 		updateComplete="offersView_updateCompleteHandler(event)"
 		viewActivate="offersView_viewActivateHandler(event)">
 	
@@ -35,19 +34,9 @@
 			private var superViewJobs:SearchJobsView;
 			private var superViewPeople:SearchPeopleView;
 			private var humanYn:Boolean = false;
-			private var categoryID:uint = 0;
 			
 			[Bindable]
 			private var offersModel:JobOfferModel;
-			
-			protected function offersView_creationCompleteHandler(event:FlexEvent):void {
-				this.addEventListener(ViewEvent.SearchJobsView, setNavData);
-				this.addEventListener(ViewEvent.SearchPeopleView, setNavData);
-				if (data != null) {
-					this.categoryID = data.cid as uint;
-					AppSettings.getInstance().logThis(this, "xxx creationComplete..." + this.categoryID);
-				}
-			}
 			
 			protected function offersView_updateCompleteHandler(event:FlexEvent):void {
 				if (navigator.poppedViewReturnedObject != null) {
@@ -57,19 +46,24 @@
 							this.superViewJobs = data.object.superView as views.SearchJobsView;
 							if (data.object.resetBar)
 								this.superViewJobs.setBar();
+							if (data.object.cid > 0)
+								this.superViewJobs.title = resourceManager.getString('resources','menu_Jobs') + " - " + data.object.categorytitle;
 						}
 						else {
 							this.superViewPeople = data.object.superView as views.SearchPeopleView;
 							if (data.object.resetBar)
 								this.superViewPeople.setBar();
+							if (data.object.cid > 0)
+								this.superViewPeople.title = resourceManager.getString('resources','menu_People') + " - " + data.object.categorytitle;
 						}
+						AppSettings.getInstance().CurrentCategoryID = data.object.cid;
 					}
 				}
 				this.title = resourceManager.getString('resources','menu_Offers');
 			}
 			
 			protected function offersView_viewActivateHandler(event:ViewNavigatorEvent):void {
-				this.loadItems(null);
+				setNavData();
 			}
 			
 			public function loadItems(event:Event):void {
@@ -77,8 +71,8 @@
 					this.offersModel = JobOfferModel.getInstance();
 
 					var offs:Array = null;
-					if (this.categoryID > 0)
-						offs = AppSettings.getInstance().dbHelper.getJobOffersComplex(this.humanYn, this.categoryID);
+					if (AppSettings.getInstance().stShowCategories && AppSettings.getInstance().CurrentCategoryID > 0)
+						offs = AppSettings.getInstance().dbHelper.getJobOffersComplex(this.humanYn, AppSettings.getInstance().CurrentCategoryID);
 					else
 						offs = AppSettings.getInstance().dbHelper.getJobOfferForHuman(this.humanYn);
 	
@@ -98,19 +92,25 @@
 							this.offersModel.items.addItem(off);
 						}
 					}
+					else
+						this.offersModel.items.removeAll();
+
+					AppSettings.getInstance().CurrentCategoryID = 0;
 				}
 			}
 
-			private function setNavData(event:ViewEvent):void {
+			private function setNavData():void {
 				this.superViewJobs = null;
 				this.superViewPeople = null;
 				this.humanYn = true;
-				if (event.type == "SearchJobsView") {
-					this.humanYn = false;
-					this.superViewJobs = event.result as SearchJobsView;
+				if (this.parentDocument != null) {
+					if (this.parentDocument.className == "SearchPeopleView")
+						this.superViewPeople = this.parentDocument as SearchPeopleView;
+					else {
+						this.humanYn = false;
+						this.superViewJobs = this.parentDocument as SearchJobsView;
+					}
 				}
-				else if (event.type == "SearchPeopleView")
-					this.superViewPeople = event.result as SearchPeopleView;
 				this.loadItems(null);
 			}
 			

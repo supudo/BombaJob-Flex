@@ -5,7 +5,7 @@
 		title="Categories"
 		actionBarVisible="false"
 		creationComplete="categoriesView_creationCompleteHandler(event)"
-		updateComplete="categoriesView_updateCompleteHandler(event)">
+		viewActivate="categoriesView_viewActivateHandler(event)">
 	
 	<s:layout>
 		<s:VerticalLayout gap="0"/>
@@ -29,38 +29,66 @@
 			import utilities.Funcs;
 			
 			[Bindable]
-			private var itemsModel:CategoryModel;
+			private var catsModel:CategoryModel;
+
+			private var superViewJobs:SearchJobsView;
+			private var superViewPeople:SearchPeopleView;
 
 			protected function categoriesView_creationCompleteHandler(event:FlexEvent):void {
 				this.title = resourceManager.getString('resources','menu_Categories');
 				this.addEventListener("syncComplete", loadItems);
 			}
-
-			protected function categoriesView_updateCompleteHandler(event:FlexEvent):void {
+			
+			protected function categoriesView_viewActivateHandler(event:ViewNavigatorEvent):void {
+				this.addEventListener("syncComplete", loadItems);
+				if (this.parentDocument != null) {
+					if (this.parentDocument.className == "SearchJobsView") {
+						this.superViewJobs = (this.parentDocument as SearchJobsView);
+						if (this.superViewJobs != null)
+							this.superViewJobs.resetView();
+					}
+					else {
+						this.superViewPeople = (this.parentDocument as SearchPeopleView);
+						if (this.superViewPeople != null)
+							this.superViewPeople.resetView();
+					}
+				}
 				this.loadItems(null);
 			}
 
 			public function loadItems(event:Event):void {
-				this.itemsModel = CategoryModel.getInstance();
+				this.catsModel = CategoryModel.getInstance();
 				if (AppSettings.getInstance().dbHelper != null) {
 					var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
 					
 					if (ents != null) {
 						var f:Funcs = new Funcs();
 						
-						if (this.itemsModel.items == null) {
-							this.itemsModel.items = new ArrayCollection();
+						if (this.catsModel.items == null) {
+							this.catsModel.items = new ArrayCollection();
 							var ent:Object, obj:Object;
 							var today:Date = new Date();
 							for (var i:int=0; i<ents.length; i++)
-								this.itemsModel.items.addItem(ents[i]);
+								this.catsModel.items.addItem(ents[i]);
 						}
 					}
+					else
+						this.catsModel.items = null;
 				}
 			}
 			
 			protected function listCategories_changeHandler(event:IndexChangeEvent):void {
-				navigator.pushView(OffersView, this.listCategories.selectedItem);
+				AppSettings.getInstance().CurrentCategoryID = this.listCategories.selectedItem.cid;
+				if (this.parentDocument != null) {
+					if (this.superViewJobs != null) {
+						this.superViewJobs.tbView.selectedIndex = 1;
+						this.superViewJobs.title = resourceManager.getString('resources','menu_Jobs') + " - " + this.listCategories.selectedItem.title;
+					}
+					else {
+						this.superViewPeople.tbView.selectedIndex = 1;
+						this.superViewPeople.title = resourceManager.getString('resources','menu_People') + " - " + this.listCategories.selectedItem.title;
+					}
+				}
 			}
 			
 		]]>
@@ -70,7 +98,7 @@
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	
-	<s:List  id="listCategories" width="100%" height="100%" dataProvider="{itemsModel.items}"
+	<s:List  id="listCategories" width="100%" height="100%" dataProvider="{catsModel.items}"
 			 alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
 			 change="listCategories_changeHandler(event)"
 			 labelField="title" />
