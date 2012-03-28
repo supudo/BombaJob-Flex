@@ -1,29 +1,15 @@
-package utilities
-{
+package utilities {
 	import database.Database;
 	import database.DatabaseResponder;
 	
 	import spark.components.View;
 
-	//[Bindable]
-	public class AppSettings
-	{
+	public class AppSettings {
 		static private var _instance:AppSettings;
 
-		/**
-		 * The Constructor
-		 * <p>The constructor requires a SingletonEnforcer, so that another
-		 * instance of the constructor can't be called directly.</p>
-		 **/
 		public function AppSettings(enforcer:SingletonEnforcer) {
 		}
 		
-		/**
-		 * Most Singleton Objects have a point of entry, the "getInstance" static function.
-		 * <p>The "getInstance" static function checks to see if the "_instance" private
-		 * variable exists, if it does return the existing "_instance", if not, return
-		 * a new MySingleton "_instance" variable.</p>
-		 **/
 		public static function getInstance():AppSettings {
 			if (AppSettings._instance == null)
 				AppSettings._instance = new AppSettings(new SingletonEnforcer())
@@ -43,8 +29,7 @@ package utilities
 		public var TwitterConsumerKey:String = "";
 		public var TwitterConsumerSecret:String = "";
 		public var AppCallbackURI:String = "http://www.bombajob.bg/";
-		//public var AppCallbackURI:String = "bombajobflex";
-		public var TwitterCallbackURI:String = AppCallbackURI;// + "://twitter";
+		public var TwitterCallbackURI:String = AppCallbackURI;
 		public var TwitterOAuthToken:String = "";
 		public var TwitterOAuthTokenSecret:String = "";
 		public var CurrentCategoryID:uint = 0;
@@ -108,9 +93,4 @@ package utilities
 	}
 }
 
-/**
- * A Class, found declared such as this one, is only available to the package it is found in.
- * <p>This ensures that the class can only be called from the Singleton Object
- * "getInstance" static function</p>
- **/
 class SingletonEnforcer{};

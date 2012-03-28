@@ -41,7 +41,7 @@
 			protected function offersView_updateCompleteHandler(event:FlexEvent):void {
 				if (navigator.poppedViewReturnedObject != null) {
 					var data:Object = navigator.poppedViewReturnedObject;
-					if (data.object != null && data.object.superView != null && data.object.resetBar != null) {
+					if (data != null && data.object != null && data.object.superView != null && data.object.resetBar != null) {
 						if (data.object.jobsYn) {
 							this.superViewJobs = data.object.superView as views.SearchJobsView;
 							if (data.object.resetBar)
@@ -115,7 +115,6 @@
 			}
 			
 			protected function listOffers_changeHandler(event:IndexChangeEvent):void {
-				this.tabBarVisible = false;
 				var o:Object = new Object();
 				o.itemObject = this.listOffers.selectedItem;
 				o.showActionBar = false;

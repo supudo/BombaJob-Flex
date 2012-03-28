@@ -75,6 +75,10 @@
 				this.lblPositivismLabel.text = resourceManager.getString('resources','odetails_Human_Positiv');
 				this.lblNegativismLabel.text = resourceManager.getString('resources','odetails_Human_Negativ');
 				if (data != null) {
+					if (this.parentDocument.className == "SearchJobsView" || this.parentDocument.className == "SearchPeopleView")
+						this.tabBarVisible = false;
+					else
+						this.tabBarVisible = true;
 					this.actionBarVisible = data.showActionBar;
 					this.currentOffer = data.itemObject; 
 
