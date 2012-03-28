@@ -15,6 +15,7 @@ package database {
 		public const GET_TEXTCONTENT:String = "SELECT * FROM text_content WHERE cid = :cid";
 
 		public const GET_CATEGORIES:String = "SELECT * FROM categories ORDER BY title";
+		public const GET_CATEGORIES_COUNT:String = "SELECT c.*, (SELECT COUNT(oid) FROM job_offers WHERE humanyn = :humanyn AND cid = c.cid) AS offerscount FROM categories AS c ORDER BY c.title";
 		public const GET_CATEGORY:String = "SELECT * FROM categories WHERE cid = :cid";
 
 		public const GET_JOBOFFERS:String = "SELECT * FROM job_offers ORDER BY publishdate DESC";

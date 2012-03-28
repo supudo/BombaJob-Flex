@@ -288,10 +288,21 @@ package database {
 			}
 			return alreadyExisting;
 		}
-
-		public function getCategories():Array {
+		
+		public function getCategoriesAll():Array {
 			var items:Array = null;
 			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_CATEGORIES);
+			sqlWrapper.statement.execute();
+			sqlWrapper.result = sqlWrapper.statement.getResult();
+			if (sqlWrapper.result != null && sqlWrapper.result.data != null)
+				items = sqlWrapper.result.data;
+			return items;
+		}
+
+		public function getCategories(humanYn:Boolean):Array {
+			var items:Array = null;
+			var sqlWrapper:SQLWrapper = this.sqlStatementFactory.newInstanceRT(this.dbSchema.GET_CATEGORIES_COUNT);
+			sqlWrapper.statement.parameters[":humanyn"] = humanYn;
 			sqlWrapper.statement.execute();
 			sqlWrapper.result = sqlWrapper.statement.getResult();
 			if (sqlWrapper.result != null && sqlWrapper.result.data != null)

@@ -34,6 +34,8 @@
 			private var superViewJobs:SearchJobsView;
 			private var superViewPeople:SearchPeopleView;
 
+			private var humanYn:Boolean = false;
+
 			protected function categoriesView_creationCompleteHandler(event:FlexEvent):void {
 				this.title = resourceManager.getString('resources','menu_Categories');
 				this.addEventListener("syncComplete", loadItems);
@@ -43,12 +45,14 @@
 				this.addEventListener("syncComplete", loadItems);
 				if (this.parentDocument != null) {
 					if (this.parentDocument.className == "SearchJobsView") {
+						this.humanYn = false;
 						this.superViewJobs = (this.parentDocument as SearchJobsView);
 						if (this.superViewJobs != null)
 							this.superViewJobs.resetView();
 					}
 					else {
 						this.superViewPeople = (this.parentDocument as SearchPeopleView);
+						this.humanYn = true;
 						if (this.superViewPeople != null)
 							this.superViewPeople.resetView();
 					}
@@ -59,17 +63,27 @@
 			public function loadItems(event:Event):void {
 				this.catsModel = CategoryModel.getInstance();
 				if (AppSettings.getInstance().dbHelper != null) {
-					var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
+					var ents:Array = AppSettings.getInstance().dbHelper.getCategories(this.humanYn);
 					
 					if (ents != null) {
 						var f:Funcs = new Funcs();
 						
-						if (this.catsModel.items == null) {
+						if (this.catsModel.items == null)
 							this.catsModel.items = new ArrayCollection();
-							var ent:Object, obj:Object;
-							var today:Date = new Date();
-							for (var i:int=0; i<ents.length; i++)
-								this.catsModel.items.addItem(ents[i]);
+						else
+							this.catsModel.items.removeAll();
+						
+						this.catsModel.items = new ArrayCollection();
+						var ent:Object, obj:Object;
+						var today:Date = new Date();
+						for (var i:int=0; i<ents.length; i++) {
+							ents[i].ctitle = ents[i].offerscount + " ";
+							if (ents[i].offerscount == 1)
+								ents[i].ctitle += resourceManager.getString('resources','offer_single');
+							else
+								ents[i].ctitle += resourceManager.getString('resources','offer_multiple');
+							ents[0].cstyle = ((ents[i].offerscount == 0) ? "emptyCat" : "");
+							this.catsModel.items.addItem(ents[i]);
 						}
 					}
 					else
@@ -94,13 +108,22 @@
 		]]>
 	</fx:Script>
 	
+	<fx:Style>
+		.nofItem { fontStyle: italic; color: #DF9368; }
+	</fx:Style>
+	
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
 	
-	<s:List  id="listCategories" width="100%" height="100%" dataProvider="{catsModel.items}"
-			 alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
-			 change="listCategories_changeHandler(event)"
-			 labelField="title" />
+	<s:List id="listCategories" width="100%" height="100%" dataProvider="{catsModel.items}"
+			alternatingItemColors="[0xE3E3E3, 0xEBEBEC]"
+			change="listCategories_changeHandler(event)">
+		<s:itemRenderer>
+			<fx:Component>
+				<s:IconItemRenderer labelField="title" messageField="ctitle" messageStyleName="nofItem" />
+			</fx:Component>
+		</s:itemRenderer>
+	</s:List>
 	
 </s:View>

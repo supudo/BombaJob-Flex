@@ -59,7 +59,7 @@
 				zeroObj.cid = 0;
 				zeroObj.title = resourceManager.getString('resources','post_Category_Human');
 				this.itemsCategory.addItemAt(zeroObj, 0);
-				var ents:Array = AppSettings.getInstance().dbHelper.getCategories();
+				var ents:Array = AppSettings.getInstance().dbHelper.getCategoriesAll();
 				for (var i:int=0; i<ents.length; i++)
 					this.itemsCategory.addItem(ents[i]);
 			}
