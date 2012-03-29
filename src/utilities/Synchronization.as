@@ -172,6 +172,10 @@ package utilities {
 					this.handleSendEmail(jsonResponse);
 					break;
 				}
+				case this.SERVICE_ID_POSTMESSAGE: {
+					this.handleSendMessage(jsonResponse);
+					break;
+				}
 				default: {
 					break;
 				}
@@ -246,6 +250,10 @@ package utilities {
 			this.dispatchEvent(new Event("offerEmailFinished", true));
 		}
 		
+		private function handleSendMessage(jsonResponse:String):void {
+			this.dispatchEvent(new Event("sendMessageFinished", true));
+		}
+		
 		/**
 		 * Publics
 		 **/
@@ -280,6 +288,22 @@ package utilities {
 				AppSettings.getInstance().logThis(null, "sendOfferEmail...");
 				this.ServiceID = this.SERVICE_ID_SENDEMAIL;
 				this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_SENDEMAIL + "&oid=" + oid;
+				this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
+				this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
+				this.httpService.method = "POST";
+				this.httpService.useProxy = false;
+				this.httpService.contentType = HTTPService.CONTENT_TYPE_FORM;
+				this.httpService.showBusyCursor = true;
+				var token:AsyncToken = this.httpService.send({jsonobj:JSON.stringify(off)});
+				token.addResponder(new mx.rpc.Responder(onJSONResult, onJSONFault));
+			}
+		}
+		
+		public function postOfferMessage(oid:int, off:Object):void {
+			if (off != null) {
+				AppSettings.getInstance().logThis(null, "postOfferMessage...");
+				this.ServiceID = this.SERVICE_ID_POSTMESSAGE;
+				this.httpService.url = AppSettings.getInstance().webServicesURL + this.SERVICE_POSTMESSAGE + "&oid=" + oid;
 				this.httpService.addEventListener(ResultEvent.RESULT, serviceResult);
 				this.httpService.addEventListener(FaultEvent.FAULT, serviceError);
 				this.httpService.method = "POST";

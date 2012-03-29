@@ -63,6 +63,7 @@
 
 			protected function offDetails_viewActivateHandler(event:ViewNavigatorEvent):void {
 				this.title = resourceManager.getString('resources','menu_OfferDetails');
+				this.btnSendMessage.label = resourceManager.getString('resources','send_messageLong');
 				
 				this.socNets = new ArrayCollection();
 				this.socNets.addItem(resourceManager.getString('resources','share_MenuShare'));
@@ -233,6 +234,13 @@
 				this._alert.alertText.text = msg;
 				this._alert.move(((this.width / 2) - (this._alert.width / 2)), ((this.height / 2) - (this._alert.height / 2)));
 			}
+			
+			protected function btnSendMessage_clickHandler(event:MouseEvent):void {
+				var obj:Object = new Object();
+				obj.oid = this.currentOffer.oid;
+				navigator.pushView(SendMessage, obj);
+			}
+			
 		]]>
 	</fx:Script>
 
@@ -309,6 +317,8 @@
 			<s:Spacer height="10" />
 			<s:Label id="lblNegativismLabel" text="NegLabel..." width="100%" styleName="boldTitle" />
 			<s:Label id="lblNegativism" text="Neg..." width="100%" />
+			<s:Spacer height="10" />
+			<s:Button id="btnSendMessage" label="Send message..." skinClass="skins.BoomButtonSkin" click="btnSendMessage_clickHandler(event)" />
 		</s:VGroup>
 	</s:Scroller>
 </s:View>
