@@ -12,20 +12,17 @@
 
 	<fx:Script>
 		<![CDATA[
-			import database.Database;
-			import database.DatabaseResponder;
-			
 			import mx.core.FlexGlobals;
 			import mx.events.FlexEvent;
 			
 			import spark.components.supportClasses.StyleableTextField;
 			
+			import utilities.AppSettings;
+			
 			protected function about_creationCompleteHandler(event:FlexEvent):void {
 				this.title = resourceManager.getString('resources','menu_About');
-
-				var dbHelper:Database = new Database();
-				dbHelper.init(new DatabaseResponder());
-				var aboutHtml:String = dbHelper.getTextContent(35).content;
+				
+				var aboutHtml:String = AppSettings.getInstance().dbHelper.getTextContent(35).content;
 				aboutHtml = aboutHtml.replace(new RegExp("<br />", "g"), "");
 
 				var myStyleSheet:StyleSheet = new StyleSheet();
